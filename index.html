@@ -287,7 +287,7 @@
     <div class="sidebar-section">
     <h4>Mikrokontroler (Terprogram)</h4>
     <!-- data-inputs="22" menandakan 22 kaki kabel -->
-    <div class="component-card" draggable="true" data-type="arduino_uno" data-inputs="22" data-outputs="0">
+    <div class="component-card" draggable="true" data-type="arduino_uno" data-inputs="29" data-outputs="0">
         <div class="comp-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="#00979C" stroke-width="2">
                 <rect x="3" y="5" width="18" height="14" rx="2" fill="#0f172a"/>
@@ -306,6 +306,65 @@
     <!-- 5. SENSOR FISIKA -->
     <div class="sidebar-section">
       <h4>Sensor Fisika</h4>
+      <!-- Modul Sensor Ultrasonik HC-SR04 -->
+      <div class="component-card" draggable="true" data-type="hc_sr04" data-inputs="3" data-outputs="1">
+        <div class="comp-icon">
+          <!-- Ikon SVG HC-SR04 (Dua Tabung Mata) -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="6" width="20" height="12" rx="2" fill="#0284c7" stroke="#0369a1"/>
+            <circle cx="7" cy="12" r="4" fill="#cbd5e1" stroke="#1e293b"/>
+            <circle cx="17" cy="12" r="4" fill="#cbd5e1" stroke="#1e293b"/>
+            <circle cx="7" cy="12" r="1.5" fill="#1e293b" stroke="none"/>
+            <circle cx="17" cy="12" r="1.5" fill="#1e293b" stroke="none"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">HC-SR04</div>
+          <div class="comp-desc">Sensor Ultrasonik (Jarak)</div>
+        </div>
+      </div>
+      <!-- Modul Motor Driver L298N -->
+      <div class="component-card" draggable="true" data-type="l298n" data-inputs="9" data-outputs="4">
+        <div class="comp-icon">
+          <!-- Ikon Mini L298N -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="8" width="16" height="12" rx="1" fill="#dc2626" stroke="#991b1b"/>
+            <rect x="6" y="4" width="12" height="4" fill="#94a3b8" stroke="#475569"/> <!-- Heatsink -->
+            <rect x="2" y="10" width="3" height="8" fill="#0284c7" stroke="none"/> <!-- Output L -->
+            <rect x="19" y="10" width="3" height="8" fill="#0284c7" stroke="none"/> <!-- Output R -->
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Modul L298N</div>
+          <div class="comp-desc">Driver Motor H-Bridge</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="soil_moisture" data-inputs="4" data-outputs="4">
+        <div class="comp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 4v8M15 4v8" stroke="#eab308"/>
+            <rect x="6" y="12" width="12" height="10" rx="1" fill="#0284c7" stroke="#0369a1"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Sensor Kelembapan</div>
+          <div class="comp-desc">Tanah (Analog/Digital)</div>
+        </div>
+      </div>
+      <!-- Modul Sensor IR -->
+      <div class="component-card" draggable="true" data-type="ir_sensor" data-inputs="2" data-outputs="1">
+        <div class="comp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="6" width="16" height="12" rx="2" fill="#1e293b" stroke="#0f172a"/>
+            <circle cx="9" cy="12" r="3" fill="#bae6fd"/>
+            <circle cx="15" cy="12" r="3" fill="#020617"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Sensor IR (Obstackle)</div>
+          <div class="comp-desc">Pendeteksi Halangan Digital</div>
+        </div>
+      </div>
       <div class="component-card" draggable="true" data-type="ldr" data-inputs="1" data-outputs="1">
         <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M10 12h4 M8 8l2 2 M8 16l2-2"/></svg></div>
         <div class="comp-info"><div class="comp-name">Sensor LDR</div><div class="comp-desc">Resistor Cahaya</div></div>
@@ -367,6 +426,21 @@
         <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" fill="#0f172a"/><path d="M9 6h6 M8 8v3 M16 8v3 M9 12h6 M8 14v3 M16 14v3 M9 18h6" stroke="#facc15" stroke-width="1.5" stroke-linecap="round"/></svg></div>
         <div class="comp-info"><div class="comp-name">7-Segment</div><div class="comp-desc">Layar Angka (Katoda Umum)</div></div>
       </div>
+      <div class="component-card" draggable="true" data-type="lcd_16x2" data-inputs="4" data-outputs="0">
+        <div class="comp-icon">
+          <!-- Ikon SVG Mini LCD untuk Sidebar -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="5" width="20" height="14" rx="2" fill="#0f766e" stroke="#0f172a"/>
+            <rect x="4" y="8" width="16" height="8" fill="#84cc28" stroke="#1a2e05"/>
+            <line x1="6" y1="19" x2="6" y2="21"/><line x1="10" y1="19" x2="10" y2="21"/>
+            <line x1="14" y1="19" x2="14" y2="21"/><line x1="18" y1="19" x2="18" y2="21"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">LCD 16x2 I2C</div>
+          <div class="comp-desc">Layar Teks (SDA, SCL)</div>
+        </div>
+      </div>
       <div class="component-card" draggable="true" data-type="led_bargraph" data-inputs="11" data-outputs="0">
         <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2" fill="#0f172a" stroke="#cbd5e1" stroke-width="1"/><line x1="8" y1="5" x2="16" y2="5" stroke="#ef4444" stroke-width="2"/><line x1="8" y1="10" x2="16" y2="10" stroke="#eab308" stroke-width="2"/><line x1="8" y1="15" x2="16" y2="15" stroke="#22c55e" stroke-width="2"/><line x1="8" y1="20" x2="16" y2="20" stroke="#334155" stroke-width="2"/></svg></div>
         <div class="comp-info"><div class="comp-name">LED Bargraph</div><div class="comp-desc">10 Segmen Bar Display</div></div>
@@ -425,6 +499,37 @@
         <div class="comp-info"><div class="comp-name">Relay 5 Kaki</div><div class="comp-desc">Sakelar Elektromagnetik (SPDT)</div></div>
       </div>
     </div>
+
+    <!-- 7. GENERATOR -->
+    <div class="sidebar-section">
+      <h4>Generator</h4>
+      <div class="component-card" draggable="true" data-type="pulse_generator" data-inputs="0" data-outputs="1">
+        <div class="comp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <!-- Ikon Gelombang Pulsa Kotak -->
+            <polyline points="2 16 6 16 6 8 14 8 14 16 18 16 22 16"></polyline>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Pulse Generator</div>
+          <div class="comp-desc">Pembangkit Pulsa Analog</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="current_source" data-inputs="1" data-outputs="1">
+        <div class="comp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="8"></circle>
+            <line x1="12" y1="16" x2="12" y2="8"></line>
+            <polyline points="9,11 12,8 15,11"></polyline>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Current Source</div>
+          <div class="comp-desc">Sumber Arus Konstan (A)</div>
+        </div>
+      </div>
+    </div>
+
 
     <!-- 7. SIRKUIT DIGITAL & GERBANG LOGIKA -->
     <div class="sidebar-section">
@@ -683,6 +788,24 @@
       </div>
     </div>
 
+    <!-- 9. ANOTASI & TEKS -->
+    <div class="sidebar-section">
+      <h4>Anotasi & Teks</h4>
+      <div class="component-card" draggable="true" data-type="text_label" data-inputs="0" data-outputs="0">
+        <div class="comp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="4 7 4 4 20 4 20 7"></polyline>
+            <line x1="9" y1="20" x2="15" y2="20"></line>
+            <line x1="12" y1="4" x2="12" y2="20"></line>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Label Teks</div>
+          <div class="comp-desc">Catatan / Judul Blok</div>
+        </div>
+      </div>
+    </div>
+
   </div> <!-- End of Sidebar -->
 
   <div class="canvas-container">
@@ -703,6 +826,9 @@
   </div>
   <button class="btn btn-info" onclick="showTruthTable()" title="Buka Tabel Kebenaran">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Tabel
+  </button>
+  <button class="btn btn-info" onclick="UIManager.openSerialMonitor()" title="Buka Serial Monitor" style="background: #0f172a; color: #38bdf8; border-color: #38bdf8;">
+    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect></svg> Serial
   </button>
 
   <div style="width: 1px; height: 24px; background: var(--border-color); margin: 0 4px;"></div>
@@ -867,6 +993,65 @@
       <input type="number" id="compValue" min="0.1" max="10000000" step="0.1" placeholder="Nilai">
       <select id="compUnit"></select>
     </div>
+    <!-- KELOMPOK INPUT LABEL TEKS (DESAIN PROFESIONAL) -->
+    <div id="textLabelGroup" style="display: none; flex-direction: column; gap: 14px; margin-top: 15px;">
+      
+      <!-- Baris 1: Isi Teks -->
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 12px; color: var(--text-muted);">Isi Teks / Catatan</label>
+        <input type="text" id="textLabelContent" placeholder="Ketik catatan di sini..." style="width: 100%; height: 34px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); font-size: 13px; box-sizing: border-box;">
+      </div>
+
+      <!-- Baris 2: Jenis Font -->
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <label style="font-size: 12px; color: var(--text-muted);">Jenis Font</label>
+        <select id="textLabelFont" style="width: 100%; height: 34px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); font-size: 13px; box-sizing: border-box;">
+          <optgroup label="Generic Family (Web Safe)">
+            <option value="sans-serif">Sans-Serif (Modern)</option>
+            <option value="serif">Serif (Klasik)</option>
+            <option value="monospace">Monospace (Kode / Terminal)</option>
+            <option value="cursive">Cursive (Tegak Bersambung)</option>
+            <option value="fantasy">Fantasy (Dekoratif)</option>
+            <option value="system-ui">System UI (Default OS)</option>
+            <option value="ui-sans-serif">UI Sans-Serif</option>
+            <option value="ui-serif">UI Serif</option>
+            <option value="ui-monospace">UI Monospace</option>
+            <option value="ui-rounded">UI Rounded (Bulat)</option>
+            <option value="math">Math (Matematika)</option>
+            <option value="emoji">Emoji</option>
+            <option value="fangsong">Fangsong (Chinese)</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- Baris 3: Ukuran & Warna (Dibagi 2 Kolom Kiri Kanan) -->
+      <div style="display: flex; gap: 12px; align-items: flex-end;">
+        
+        <!-- Kolom Kiri: Ukuran Teks -->
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+          <label style="font-size: 12px; color: var(--text-muted);">Ukuran (px)</label>
+          <input type="number" id="textLabelSize" step="2" min="10" max="72" value="16" style="width: 100%; height: 34px; padding: 0 10px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); font-size: 13px; box-sizing: border-box;">
+        </div>
+
+        <!-- Kolom Kanan: Warna Teks (Pemilih warna disembunyikan dalam kotak kecil) -->
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+          <label style="font-size: 12px; color: var(--text-muted);">Warna</label>
+          <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; height: 34px; padding: 0 6px 0 10px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); box-sizing: border-box;">
+            <span style="font-size: 12px; color: var(--text-main);">Pilih</span>
+            <!-- Kotak warna kecil di ujung kanan -->
+            <input type="color" id="textLabelColor" value="#ffffff" style="width: 24px; height: 24px; padding: 0; border: none; background: transparent; cursor: pointer; border-radius: 2px;">
+          </div>
+        </div>
+        
+      </div>
+
+      <!-- Baris 4: Toggle Kotak Background (Teks Kiri, Centang Kanan) -->
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0 4px 0; border-top: 1px dashed var(--border-color); margin-top: 4px;">
+        <label for="textLabelBox" style="font-size: 12px; color: var(--text-main); cursor: pointer; margin: 0;">Tampilkan Kotak Background</label>
+        <input type="checkbox" id="textLabelBox" style="width: 16px; height: 16px; margin: 0; cursor: pointer;">
+      </div>
+      
+    </div>
     <div id="ledInputGroup" style="display: none; flex-direction: column; gap: 10px; margin-top: 15px;">
       <div>
         <label style="font-size: 12px; color: var(--text-muted);">Warna LED</label>
@@ -910,6 +1095,19 @@
       <div><label style="font-size: 12px; color: var(--text-muted);">Max RPM (pada Rated Voltage)</label><input type="number" id="motorMaxRPM" step="1" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
       <div><label style="font-size: 12px; color: var(--text-muted);">Coil Resistance (Ω)</label><input type="number" id="motorCoilR" step="0.1" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
     </div>
+    <!-- KELOMPOK INPUT SERVO MOTOR -->
+    <div id="servoInputGroup" style="display: none; flex-direction: column; gap: 12px; margin-top: 15px;">
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Batas Sudut Putaran (Maksimal)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <input type="number" id="servoMaxAngle" step="1" min="10" max="360" value="180" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main);">
+            <span style="font-weight: bold; font-size: 14px; color: var(--primary);">Derajat (°)</span>
+        </div>
+        <span style="font-size: 10px; color: var(--text-muted); line-height: 1.4; display: block; margin-top: 6px;">
+            *Menentukan batas mekanis tuas saat diberi tegangan penuh 5V.
+        </span>
+      </div>
+    </div>
     <div id="relayInputGroup" style="display: none; flex-direction: column; gap: 12px; margin-top: 15px;">
       <div>
         <label style="font-size: 12px; color: var(--text-muted);">Nominal Coil Voltage</label>
@@ -943,6 +1141,57 @@
       <div><label style="font-size: 12px; color: var(--text-muted);">DC Offset (Volt)</label><input type="number" id="vsineOffset" step="0.1" value="0" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
       <div><label style="font-size: 12px; color: var(--text-muted);">Time Delay / Tunda (Detik)</label><input type="number" id="vsineDelay" step="0.01" value="0" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
     </div>
+    <!-- KELOMPOK INPUT PULSE GENERATOR (THE GOLDEN 7) -->
+    <div id="pulseGenInputGroup" style="display: none; flex-direction: column; gap: 10px; margin-top: 15px;">
+      <div><label style="font-size: 12px; color: var(--text-muted);">V-Initial / Tegangan Mati (V)</label><input type="number" id="pulseVInit" step="0.1" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+      <div><label style="font-size: 12px; color: var(--text-muted);">V-Peak / Tegangan Puncak (V)</label><input type="number" id="pulseVPeak" step="0.1" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+      <div><label style="font-size: 12px; color: var(--text-muted);">Time Delay / Tunda Awal (Detik)</label><input type="number" id="pulseDelay" step="0.01" min="0" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+      
+      <div style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-body);">
+        <label style="font-size: 11px; color: var(--primary); font-weight:bold; margin-bottom: 6px; display:block;">Pengaturan Waktu Bentuk Gelombang</label>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label style="font-size: 11px; color: var(--text-muted);">Rise Time (Waktu Naik)</label>
+                <input type="number" id="pulseRise" step="0.001" min="0.001" style="width: 70px; padding: 4px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main); font-size:11px;">
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label style="font-size: 11px; color: var(--text-muted);">Pulse Width (Durasi Nyala)</label>
+                <input type="number" id="pulseOn" step="0.001" min="0.001" style="width: 70px; padding: 4px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main); font-size:11px;">
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label style="font-size: 11px; color: var(--text-muted);">Fall Time (Waktu Turun)</label>
+                <input type="number" id="pulseFall" step="0.001" min="0.001" style="width: 70px; padding: 4px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main); font-size:11px;">
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <label style="font-size: 11px; color: var(--text-muted);">Total Periode (1 Siklus)</label>
+                <input type="number" id="pulsePeriod" step="0.001" min="0.001" style="width: 70px; padding: 4px; border-radius: 4px; border: 1px solid #334155; background: var(--control-bg); color: #22c55e; font-size:11px; font-weight:bold;">
+            </div>
+        </div>
+      </div>
+    </div>
+    <!-- KELOMPOK INPUT CURRENT SOURCE -->
+    <div id="currentSourceInputGroup" style="display: none; flex-direction: column; gap: 12px; margin-top: 15px;">
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Target Arus Konstan (I-Set)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <input type="number" id="csCurrent" step="0.1" min="0.1" value="20" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main);">            
+            <select id="csCurrentUnit" style="padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--primary); font-weight: bold; width: 80px; cursor: pointer;">
+                <option value="0.001">mA</option>
+                <option value="1">A</option>
+            </select>
+        </div>
+        <span style="font-size: 10px; color: var(--text-muted); display: block; margin-top: 4px;">*Contoh: Ketik 0.02 untuk 20mA.</span>
+      </div>
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Batas Tegangan Maksimal (Compliance Voltage)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <input type="number" id="csVComp" step="0.1" min="0.1" value="24" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main);">
+            <span style="font-weight: bold; font-size: 14px; color: var(--primary);">Volt</span>
+        </div>
+        <span style="font-size: 10px; color: var(--text-muted); display: block; margin-top: 4px;">*Jika beban butuh tegangan lebih dari ini, arus akan diturunkan (Saturasi).</span>
+      </div>
+    </div>
+    <!-- KELOMPOK INPUT CLOCK GENERATOR -->
     <div id="clockInputGroup" style="display: none; flex-direction: column; gap: 12px; margin-top: 15px;">
       <div>
         <label style="font-size: 12px; color: var(--text-muted);">Frekuensi Detak (Kecepatan)</label>
@@ -966,6 +1215,7 @@
         </select>
       </div>
     </div>
+    <!-- KELOMPOK INPUT FLIP-FLOP -->
     <div id="ffInputGroup" style="display: none; flex-direction: column; gap: 12px; margin-top: 15px;">
       <div>
         <label style="font-size: 12px; color: var(--text-muted);">Status Awal (Power-On State)</label>
@@ -1001,6 +1251,22 @@
             </div>
           </div>
       </div>
+      <!-- KELOMPOK INPUT SENSOR KELEMBAPAN TANAH -->
+    <div id="soilMoistureInputGroup" style="display: none; flex-direction: column; gap: 12px; margin-top: 15px;">
+      <div style="background: var(--bg-body); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+        <h4 style="margin: 0 0 8px 0; font-size: 12px; color: var(--primary);">Kalibrasi Trimpot (Sensitivitas Digital DO)</h4>
+        <div>
+          <label style="font-size: 11px; color: var(--text-muted);">Batas Kering untuk memicu Pompa/DO (Bawaan: 50%)</label>
+          <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <input type="number" id="soilThreshold" step="1" min="1" max="99" value="50" style="flex: 1; padding: 6px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);">
+            <span style="font-weight: bold; font-size: 12px; color: var(--primary); width: 30px;">%</span>
+          </div>
+          <span style="font-size: 10px; color: var(--text-muted); line-height: 1.4; display: block; margin-top: 6px;">
+            *Jika tingkat kelembapan tanah anjlok di bawah angka ini, sensor akan menganggap tanah kering dan mengubah pin <b>DO</b> menjadi HIGH (5V).
+          </span>
+        </div>
+      </div>
+    </div>
       <!-- PENGATURAN INDUKTANSI (HENRY) - OTOMATIS -->
       <div style="background: #0f172a; padding: 10px; border-radius: 6px; border: 1px dashed #3b82f6;">
           <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #3b82f6;">Konversi Induktansi (Untuk SPICE/Proteus)</h4>
@@ -1128,6 +1394,19 @@
             *Gunakan fungsi standar: pinMode(pin, mode), digitalWrite(pin, val), digitalRead(pin), analogRead(pin), dan millis().<br>
             *Jangan gunakan delay()! Gunakan logika millis() agar browser tidak lag.
         </span>
+
+        <!-- 🌟 TAMBAHAN BARU: Tombol Upload & Download Kode -->
+        <div style="display: flex; gap: 8px; margin-top: 10px;">
+            <input type="file" id="uploadArduinoInput" accept=".js,.txt,.ino,.c,.cpp" style="display: none;" onchange="UIManager.handleArduinoUpload(event)">
+            <button class="btn btn-secondary" onclick="document.getElementById('uploadArduinoInput').click()" style="flex: 1; font-size: 11px; padding: 6px; justify-content: center;">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Buka File
+            </button>
+            <button class="btn btn-secondary" onclick="UIManager.downloadArduinoCode()" style="flex: 1; font-size: 11px; padding: 6px; justify-content: center;">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 4px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Unduh File
+            </button>
+        </div>
     </div>
 </div>
     <!-- KELOMPOK INPUT DIODA BRIDGE -->
@@ -1182,6 +1461,34 @@
   </div>
 </div>
 
+<!-- MODAL SERIAL MONITOR (FLOATING WINDOW) -->
+<div id="serialMonitorModal" class="floating-window">
+  <!-- Header (Area yang bisa diklik untuk menggeser) -->
+  <div class="floating-header" id="serialMonitorHeader">
+    <h2 style="margin: 0; font-size: 14px; color: #38bdf8; display: flex; align-items: center; gap: 8px;">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M6 8h.01 M10 8h.01"></path></svg> 
+      Serial Monitor
+    </h2>
+    <button onclick="UIManager.closeSerialMonitor()" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 2px;">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+  </div>
+
+  <!-- Layar Teks & Tombol (Isi Elastis) -->
+  <div class="floating-body" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
+    <!-- flex: 1 menggantikan height statis agar melar mengikuti jendela -->
+    <div id="serialMonitorOutput" style="flex: 1; overflow-y: auto; background: #000000; color: #10b981; font-family: monospace; font-size: 12px; padding: 10px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word;">
+      <span style="color: #64748b;">> Menunggu koneksi Serial...</span><br>
+    </div>
+    
+    <!-- flex-shrink: 0 agar barisan tombol bawah tidak ikut gepeng -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-shrink: 0;">
+      <span style="font-size: 11px; color: #64748b;">Baud rate: 9600 (Simulated)</span>
+      <button class="btn btn-secondary" onclick="UIManager.clearSerialMonitor()" style="padding: 4px 10px; font-size: 12px; background: #334155; color: white;">Bersihkan Layar</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast-container" id="toastContainer"></div>
 <!-- WADAH GLOBAL TOOLTIP -->
 <div id="globalTooltip" class="global-tooltip"></div>
@@ -1198,6 +1505,122 @@
     </div>
   </div>
 </div>
+
+<!-- 🎨 PALET WARNA KABEL (GAYA PREMIUM) -->
+    <div id="wireColorPalette" class="wire-palette-container" style="display: none;">
+        <div class="wire-palette-header">Warna Kabel</div>
+        <div class="wire-palette-grid">
+            <!-- Baris 1: Warna Utama -->
+            <button class="color-btn" style="background: #ef4444;" onclick="setWireColor('#ef4444')" title="Merah (VCC)"></button>
+            <button class="color-btn" style="background: #1e293b;" onclick="setWireColor('#1e293b')" title="Hitam (GND)"></button>
+            <button class="color-btn" style="background: #3b82f6;" onclick="setWireColor('#3b82f6')" title="Biru"></button>
+            <button class="color-btn" style="background: #eab308;" onclick="setWireColor('#eab308')" title="Kuning"></button>
+            
+            <!-- Baris 2: Warna Sekunder -->
+            <button class="color-btn" style="background: #22c55e;" onclick="setWireColor('#22c55e')" title="Hijau"></button>
+            <button class="color-btn" style="background: #f97316;" onclick="setWireColor('#f97316')" title="Oranye"></button>
+            <button class="color-btn" style="background: #8b5cf6;" onclick="setWireColor('#8b5cf6')" title="Ungu"></button>
+            <button class="color-btn" style="background: #f8fafc;" onclick="setWireColor('#f8fafc')" title="Putih"></button>
+            
+            <!-- Tombol Lebar untuk Reset -->
+            <button class="color-btn-reset" onclick="setWireColor('')" title="Kembalikan ke Default">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                Reset Default
+            </button>
+        </div>
+    </div>
+    
+    <style>
+        /* Desain Kotak Palet Melayang */
+        .wire-palette-container {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+            z-index: 9999;
+            flex-direction: column;
+            gap: 10px;
+            /* Animasi Muncul (Pop In) */
+            animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Teks Header Palet */
+        .wire-palette-header {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 2px;
+            pointer-events: none;
+        }
+
+        /* Grid Warna */
+        .wire-palette-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        /* Gaya Tombol Warna Bulat */
+        .color-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0;
+            outline: none;
+        }
+
+        /* Efek saat Warna di-Hover (Membesar & Ada Cincin Putih) */
+        .color-btn:hover {
+            transform: scale(1.15) translateY(-2px);
+            border-color: #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+
+        /* Tombol Reset yang Elegan di Bawah */
+        .color-btn-reset {
+            grid-column: span 4;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            border-radius: 6px;
+            padding: 6px 0;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+            margin-top: 4px;
+        }
+
+        .color-btn-reset:hover {
+            background: rgba(239, 68, 68, 0.15); /* Merah transparan */
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        /* Keyframe Animasi */
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+    
+    <style>
+        .color-btn { width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.2s; padding: 0; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .color-btn:hover { transform: scale(1.2); border-color: white; }
+    </style>
  
 <!-- Panggil main.js sebagai modul utama -->
 <script type="module" src="/src/main.js"></script>
