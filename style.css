@@ -1,0 +1,489 @@
+/* ==========================================================================
+   1. VARIABEL TEMA & RESET GLOBAL
+   ========================================================================== */
+:root {
+  --bg-body: #f8fafc;
+  --bg-container: #ffffff;
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --panel-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --control-bg: #f1f5f9;
+  --box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05), 0 2px 4px -1px rgba(0,0,0,0.03);
+  --toast-bg: #1e293b;
+  --toast-text: #f8fafc;
+  --canvas-grid: #cbd5e1;
+  --modal-overlay: rgba(15, 23, 42, 0.6);
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --danger: #e11d48;
+  --danger-hover: #be123c;
+  --info: #0284c7;
+  --warning: #d97706;
+  --success: #059669;
+  --secondary: #64748b;
+  --radius: 8px;
+  --wire-default: #15803d;
+}
+
+[data-theme="dark"] {
+  --bg-body: #0f172a;
+  --bg-container: #1e293b;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --panel-bg: #1e293b;
+  --border-color: #334155;
+  --control-bg: #334155;
+  --box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2), 0 2px 4px -1px rgba(0,0,0,0.1);
+  --toast-bg: #f8fafc;
+  --toast-text: #0f172a;
+  --canvas-grid: #334155;
+  --modal-overlay: rgba(0, 0, 0, 0.75);
+  --primary: #6366f1;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg-body);
+  color: var(--text-main);
+  height: 100vh;
+  overflow: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-body); }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* ==========================================================================
+   2. LAYOUT UTAMA (Sidebar & Kanvas)
+   ========================================================================== */
+.app-container { display: flex; height: 100vh; width: 100%; }
+
+.sidebar {
+  width: 280px;
+  background-color: var(--bg-container);
+  border-right: 1px solid var(--border-color);
+  display: flex; flex-direction: column; overflow-y: auto; padding: 16px; gap: 12px;
+  transition: width 0.8s cubic-bezier(0.25, 0.8, 0.25, 1), background-color 0.3s ease, border-color 0.3s ease, padding 0.3s ease, bottom 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  box-shadow: 2px 0 10px rgba(0,0,0,0.02);
+  z-index: 50;
+  touch-action: pan-y;
+}
+
+.sidebar-top-fixed {
+  position: sticky;
+  top: -16px; 
+  background-color: var(--bg-container);
+  z-index: 90; 
+  margin: -16px -16px 0 -16px; 
+  padding: 16px 16px 12px 16px; 
+  border-bottom: 1px solid var(--border-color); 
+  box-shadow: 0 4px 10px -4px rgba(0, 0, 0, 0.05); 
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.sidebar-header {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 16px; font-weight: 700; color: var(--text-main);
+  padding-bottom: 12px; border-bottom: 1px solid var(--border-color); margin-bottom: 4px;
+}
+
+.sidebar-section { margin-bottom: 8px; }
+.sidebar-section h4 {
+  font-size: 11px; font-weight: 600; color: var(--text-muted);
+  text-transform: uppercase; letter-spacing: 0.5px; margin: 10px 0 8px 0;
+}
+
+.canvas-container { flex: 1; display: flex; flex-direction: column; background: var(--bg-body); min-width: 0; transition: background-color 0.3s ease; }
+
+.toolbar {
+  background: var(--bg-container); padding: 12px 20px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex; gap: 8px; align-items: center; 
+  flex-wrap: nowrap; /* 🟢 FIX: Melarang tombol turun ke baris baru */
+  overflow-x: auto;  /* 🟢 FIX: Mengizinkan scroll ke samping */
+  -webkit-overflow-scrolling: touch; /* Scroll mulus di layar sentuh */
+  scrollbar-width: none; /* Sembunyikan garis scrollbar di Firefox */
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  z-index: 40; box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+.toolbar::-webkit-scrollbar { display: none; }
+.toolbar > div { flex-shrink: 0; }
+
+/* ==========================================================================
+   3. KOMPONEN UI & TOMBOL (Button, Modals, Toasts)
+   ========================================================================== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 8px 14px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;
+  transition: all 0.2s; font-size: 12px; white-space: nowrap; touch-action: manipulation; min-height: 34px;
+  flex-shrink: 0;
+}
+.btn svg { width: 14px; height: 14px; stroke-width: 2px; }
+.btn:active { transform: scale(0.96); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.btn-primary { background: var(--primary); color: white; } .btn-primary:hover { background: var(--primary-hover); }
+.btn-primary.active { background: var(--success); }
+.btn-danger { background: var(--danger); color: white; } .btn-danger:hover { background: var(--danger-hover); }
+.btn-info { background: var(--info); color: white; } .btn-info:hover { filter: brightness(0.9); }
+.btn-warning { background: var(--warning); color: white; } .btn-warning:hover { filter: brightness(0.9); }
+.btn-success { background: var(--success); color: white; } .btn-success:hover { filter: brightness(0.9); }
+.btn-secondary { background: var(--secondary); color: white; } .btn-secondary:hover { filter: brightness(0.9); }
+
+.btn-theme {
+  background: var(--control-bg); color: var(--text-main);
+  padding: 8px; border-radius: 6px; min-width: 34px; margin-left: auto; cursor: pointer;
+  border: 1px solid transparent; transition: all 0.2s;
+}
+.btn-theme:hover { background: var(--border-color); }
+.btn-theme svg { width: 16px; height: 16px; }
+
+.zoom-controls { display:flex; align-items:center; gap:8px; background:var(--control-bg); padding:4px 8px; border-radius:6px; font-size:12px; border: 1px solid var(--border-color); }
+.zoom-btn { border:none; background:none; cursor:pointer; font-weight:bold; color:var(--text-main); font-size:16px; padding:0 4px; transition: color 0.2s; }
+.zoom-btn:hover { color: var(--primary); }
+#zoomSlider { width: 70px; height: 4px; accent-color: var(--primary); cursor: pointer; }
+
+.status-indicator { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.status-ready { background: rgba(255,255,255,0.4); }
+.status-active { background: #ffc107; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(255, 193, 7, 0.4); } 50% { opacity: 0.6; box-shadow: 0 0 0 4px rgba(255, 193, 7, 0); } }
+
+/* Modals & Toasts */
+.toast-container { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; pointer-events: none; z-index: 10000; }
+.toast { background: var(--toast-bg); color: var(--toast-text); padding: 12px 20px; border-radius: 40px; font-size: 13px; font-weight: 600; box-shadow: 0 4px 15px rgba(0,0,0,0.15); animation: islandOpen 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, islandClose 0.4s cubic-bezier(0.4, 0, 0.2, 1) 2.6s forwards; max-width: 400px; white-space: nowrap; overflow: hidden; transform-origin: right center; pointer-events: none; display: flex; align-items: center; gap: 8px; }
+@keyframes islandOpen { 0% { max-width: 0px; padding-left: 0px; padding-right: 0px; opacity: 0; transform: scale(0.85); } 30% { opacity: 1; } 100% { max-width: 400px; padding-left: 20px; padding-right: 20px; opacity: 1; transform: scale(1); } }
+@keyframes islandClose { 0% { max-width: 400px; padding-left: 20px; padding-right: 20px; opacity: 1; transform: scale(1); } 60% { opacity: 1; } 100% { max-width: 0px; padding-left: 0px; padding-right: 0px; opacity: 0; transform: scale(0.85); } }
+
+.confirm-toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--toast-bg); color: var(--toast-text); padding: 16px 24px; border-radius: var(--radius); font-size: 14px; font-weight: 600; z-index: 10001; pointer-events: auto; display: flex; gap: 12px; align-items: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+.confirm-toast button { padding: 6px 14px; border: 1px solid var(--border-color); background: var(--bg-container); color: var(--text-main); border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.2s; }
+.confirm-toast button#confirmYes { background: var(--danger); border-color: var(--danger); color: white; }
+
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); backdrop-filter: blur(2px); z-index: 1000; justify-content: center; align-items: center; }
+.modal.show { display: flex; animation: fadeIn 0.2s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal-content { background: var(--bg-container); padding: 24px; border-radius: 12px; border: 1px solid var(--border-color); max-width: 450px; width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); max-height: 85vh; overflow-y: auto; }
+.modal-content h2 { margin-bottom: 16px; color: var(--text-main); font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+
+.resistor-input-group { display: flex; gap: 10px; align-items: center; margin: 12px 0; }
+.resistor-input-group input, .resistor-input-group select { flex: 1; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px; background: var(--bg-body); color: var(--text-main); outline: none; transition: border-color 0.2s; }
+
+.preset-buttons { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.preset-btn { padding: 6px 12px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main); border-radius: 20px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; }
+.preset-btn:hover { background: var(--primary); border-color: var(--primary); color: white; }
+
+.truth-table { width: 100%; border-collapse: collapse; font-size: 13px; border-radius: 8px; overflow: hidden; margin-top: 10px; }
+.truth-table th { background: var(--control-bg); color: var(--text-main); padding: 10px; font-weight: 600; border: 1px solid var(--border-color); }
+.truth-table td { padding: 8px; text-align: center; border: 1px solid var(--border-color); color: var(--text-main); }
+
+/* ==========================================================================
+   4. KANVAS & KABEL KELISTRIKAN
+   ========================================================================== */
+#canvas-wrapper {
+  flex: 1; position: relative; 
+  overflow: auto; 
+  background: var(--bg-body); 
+  touch-action: none;
+  overscroll-behavior: none;
+  scrollbar-width: none; /* Menyembunyikan di Firefox */
+  -ms-overflow-style: none; /* Menyembunyikan di IE/Edge Lama */
+}
+
+#canvas-wrapper::-webkit-scrollbar {
+  display: none; 
+}
+
+#canvas {
+  width: 3000px; height: 3000px;
+  background: var(--panel-bg);
+  background-image: linear-gradient(var(--canvas-grid) 1px, transparent 1px), linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px);
+  background-size: 20px 20px;
+  position: relative; cursor: crosshair;
+  transform-origin: 0 0; transform: scale(1);
+  transition: background-color 0.3s ease;
+  touch-action: auto;
+}
+
+/* Class untuk mematikan grid secara instan */
+#canvas.no-grid {
+  background-image: none !important;
+}
+
+#selection-box { position: absolute; border: 1.5px dashed var(--primary); background: rgba(79, 70, 229, 0.1); z-index: 100; pointer-events: none; display: none; }
+
+#wire-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; overflow: visible; }
+#wire-overlay svg { width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+#wire-overlay path { pointer-events: stroke; cursor: pointer; stroke: var(--wire-default); stroke-width: 2.5; stroke-linecap: square; stroke-linejoin: miter; fill: none; transition: stroke 0.3s ease, stroke-width 0.3s ease, filter 0.3s ease; }
+#wire-overlay path:hover { stroke: var(--danger) !important; stroke-width: 4.5 !important; filter: drop-shadow(0 0 4px rgba(225,29,72,0.5)); }
+
+/* Warna Indikator Kabel */
+.wire-12v { stroke: #ef4444 !important; stroke-width: 4.5 !important; filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.6)); }
+.wire-5v { stroke: #22c55e !important; stroke-width: 3 !important; filter: drop-shadow(0 0 4px rgba(34, 197, 94, 0.6)); }
+.wire-active { stroke: var(--success) !important; filter: drop-shadow(0 0 3px rgba(5,150,105,0.6)); stroke-width: 3 !important; }
+.wire-ground-base, .wire-gnd { stroke: #1e293b !important; stroke-width: 3.5 !important; }
+.wire-ground { stroke: #000000 !important; }
+
+[data-theme="dark"] .wire-ground-base, [data-theme="dark"] .wire-gnd { stroke: #94a3b8 !important; }
+
+/* ==========================================================================
+   5. KOMPONEN SIRKUIT DI KANVAS
+   ========================================================================== */
+.component-card {
+  background: var(--bg-container);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 10px 12px; cursor: pointer; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none; display: flex; align-items: center; gap: 12px;
+}
+.component-card:hover { border-color: var(--primary); box-shadow: var(--box-shadow); transform: translateY(-2px); }
+.component-card:active { transform: scale(0.98); }
+.component-card.dragging { opacity: 0.5; transform: scale(0.95); border-style: dashed; }
+
+.comp-icon { color: var(--primary); display: flex; align-items: center; justify-content: center; background: var(--control-bg); width: 36px; height: 36px; border-radius: 6px; flex-shrink: 0; }
+.comp-icon svg { width: 20px; height: 20px; stroke-width: 2px; }
+.comp-info { flex: 1; min-width: 0; }
+.comp-name { font-weight: 600; font-size: 13px; margin-bottom: 2px; color: var(--text-main); }
+.comp-desc { font-size: 11px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.circuit-component { position: absolute; background: transparent !important; border: none !important; user-select: none; z-index: 10; transition: filter 0.2s; touch-action: none; }
+.circuit-component:hover { filter: drop-shadow(0 3px 6px rgba(0,0,0,0.15)); }
+.circuit-component.selected { filter: drop-shadow(0 0 8px var(--primary)); }
+.circuit-component.selected > div { outline: 2px solid var(--primary); outline-offset: 4px; border-radius: 4px; }
+
+/* 🟢 SEMBUNYIKAN BOUNDING BOX & TOMBOL SAAT MERUTEKAN KABEL */
+body.is-routing-wire .circuit-component:hover { filter: none !important; }
+body.is-routing-wire .circuit-component.selected { filter: none !important; }
+body.is-routing-wire .circuit-component.selected > div { outline: none !important; }
+body.is-routing-wire .circuit-component .delete-btn,
+body.is-routing-wire .circuit-component .rotate-btn { display: none !important; }
+
+.comp-label { font-family: monospace; font-size: 10px; fill: #333; }
+[data-theme="dark"] .comp-label { fill: #ccc; }
+/* Aturan Counter-Rotation untuk Semua Teks */
+.circuit-component svg text {
+  transform-origin: center;       /* Putar di poros tengah teks */
+  transform-box: fill-box;        /* Batasi jangkar ke dalam kotak teks saja (Penting untuk SVG!) */
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Animasi membal saat berputar */
+}
+.resistor-val, .fuse-val { transition: fill 0.2s, font-weight 0.2s; }
+.resistor-val:hover, .fuse-val:hover { fill: var(--danger) !important; font-weight: bold !important; }
+.meter-val { font-family: monospace; font-size: 14px; font-weight: bold; fill: #10b981; }
+
+.connection-point { position: absolute; width: 12px; height: 12px; background: #ef4444; border: 2px solid #7f1d1d; border-radius: 50%; cursor: pointer; z-index: 20; transition: all 0.2s; touch-action: none; transform: translate(-50%, -50%); }
+.connection-point[data-polarity="neg"] { background: #000000; border-color: #333; }
+.connection-point:hover { background: #22c55e; transform: translate(-50%, -50%) scale(1.5); box-shadow: 0 0 5px rgba(34,197,94,0.8); border-color: #14532d; }
+.connection-point.connected { background: #16a34a; border-color: #14532d; }
+.connection-point.pending { box-shadow: 0 0 10px rgba(34,197,94,0.8); background: #22c55e; transform: translate(-50%, -50%) scale(1.3); }
+.leg-active { stroke: var(--success) !important; }
+/* 🟢 MENYEMBUNYIKAN PIN VIRTUAL KHUSUS UNTUK TITIK SOLDER */
+.circuit-component[data-type="wire_node"] .connection-point {
+    background: transparent !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+/* Biarkan bersinar hijau hanya saat pengguna sedang menarik/menyambung kabel baru ke titik ini */
+.circuit-component[data-type="wire_node"] .connection-point.pending {
+    background: rgba(34, 197, 94, 0.5) !important; /* Hijau tembus pandang */
+    box-shadow: 0 0 10px rgba(34,197,94,0.8) !important;
+}
+
+/* =========================================================
+   ANIMASI MENGGULUNG (ROLLING & UNROLLING TEXT)
+   ========================================================= */
+/* 1. Transisi untuk Ikon agar bisa berputar */
+.sidebar .comp-icon svg {
+  transition: transform 0.6s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transform: rotate(0deg);
+}
+
+/* 2. Transisi teks melebar/menyusut secara perlahan */
+.sidebar .title-text,
+.sidebar .sidebar-search,
+.sidebar .sidebar-section h4,
+.sidebar .comp-info {
+  transition: max-width 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.4s ease, padding 0.6s ease;
+  max-width: 250px; /* Lebar maksimal elemen */
+  opacity: 1;
+  overflow: hidden;
+  white-space: nowrap; /* Memaksa teks tetap 1 baris saat digulung */
+}
+
+/* 3. Memastikan hover komponen tetap cepat, tapi efek buka/tutup lebarnya lambat */
+.sidebar .component-card {
+  transition: gap 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+  /* ==========================================================================
+   7. MEDIA QUERIES (DESKTOP & MOBILE RESPONSIVE)
+   ========================================================================== */
+
+/* AKHUSUS TABLET & DESKTOP (COLLAPSE SIDEBAR) */
+@media (min-width: 769px) {
+  .sidebar { overflow-x: hidden; }
+  .sidebar.collapsed { width: 80px; padding: 16px 10px; }
+  
+  .sidebar.collapsed .title-text,
+  .sidebar.collapsed .sidebar-search,
+  .sidebar.collapsed .sidebar-section h4,
+  .sidebar.collapsed .comp-info { display: none; }
+  
+  .sidebar.collapsed .sidebar-header { justify-content: center; }
+  .sidebar.collapsed .component-card { justify-content: center; padding: 10px 0; gap: 0; }
+  .sidebar.collapsed #collapseSidebarBtn svg { transform: rotate(180deg); }
+  
+  /* =========================================================
+    GLOBAL TOOLTIP (Anti-Terpotong Sidebar)
+   ========================================================= */
+.global-tooltip {
+  position: fixed; /* KUNCI UTAMA: Melayang bebas di atas seluruh layar */
+  background: var(--toast-bg);
+  color: var(--toast-text);
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 100000; /* Lapisan paling atas */
+  
+  /* Animasi Sembunyi/Muncul */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-50%) translateX(-10px);
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), visibility 0.2s;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+}
+
+/* Segitiga panah penunjuk */
+.global-tooltip::before {
+  content: '';
+  position: absolute;
+  right: 100%; /* Menempel di sebelah kiri kotak */
+  top: 50%;
+  transform: translateY(-50%);
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent var(--toast-bg) transparent transparent;
+}
+
+.global-tooltip.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-50%) translateX(0); /* Meluncur masuk */
+}
+}
+
+/* B. ELEMEN KHUSUS MOBILE (SEMBUNYIKAN DI DESKTOP) */
+.bottom-nav-bar { display: none; }
+.sidebar-overlay { display: none; }
+
+/* C. KHUSUS HP (TAMPILAN LACI BAWAH / BOTTOM SHEET) */
+@media (max-width: 768px) {
+  .app-container { flex-direction: column; height: 100dvh; overflow: hidden; }
+  .canvas-container { flex: 1; height: 100%; min-height: 0; padding-top: calc(env(safe-area-inset-top, 0px) + 8px); }
+
+  /* Sulap Sidebar menjadi Bottom Sheet */
+  .sidebar { 
+    position: fixed; bottom: -100%; left: 0; width: 100%; height: 75vh; max-height: none;
+    background-color: var(--bg-container); border-top-left-radius: 24px; border-top-right-radius: 24px;
+    box-shadow: 0 -10px 40px rgba(0,0,0,0.3); z-index: 1000; padding: 24px 16px 16px 16px; 
+    flex-direction: column; flex-wrap: nowrap;
+  }
+  .sidebar.open { bottom: 0; }
+
+  /* Penyesuaian Sticky Header untuk Laci HP */
+  .sidebar-top-fixed { top: -24px; margin-top: -24px; padding-top: 24px; border-top-left-radius: 24px; border-top-right-radius: 24px; }
+  .sidebar::before { content: ''; position: absolute; top: 10px; left: 50%; transform: translateX(-50%); width: 40px; height: 5px; border-radius: 5px; background: var(--border-color); z-index: 101; }
+
+  /* Rapikan isi dalam laci */
+  .sidebar-header { width: 100%; font-size: 16px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 8px; justify-content: space-between; }
+  .sidebar-section { display: block; }
+  .sidebar-section h4 { font-size: 12px; margin: 16px 0 10px 0; color: var(--primary); }
+  
+  .component-card { width: 100%; padding: 12px; gap: 12px; display: flex; margin-bottom: 8px; }
+  .comp-icon { width: 36px; height: 36px; }
+  .comp-icon svg { width: 20px; height: 20px; }
+  .comp-name { font-size: 13px; } 
+  .comp-desc { display: block; font-size: 11px; }
+
+  /* Toolbar bisa di-scroll Horizontal */
+  .toolbar { 
+    padding: 10px 15px 12px 15px; gap: 10px; overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; scrollbar-width: none; position: relative; z-index: 100; flex-shrink: 0; 
+  }
+  .toolbar::-webkit-scrollbar { display: none; }
+  #canvas-wrapper { min-height: 0; }
+  .btn { padding: 8px 14px; font-size: 12px; flex-shrink: 0; }
+  .zoom-controls { margin-left: 0; flex-shrink: 0; }
+
+  /* Overlay Gelap Laci HP */
+  .sidebar-overlay { display: block; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(2px); z-index: 999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+  .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+
+  /* Bottom Navigation Bar (Gaya Instagram) */
+  .bottom-nav-bar {
+    display: flex; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-container); border-top: 1px solid var(--border-color); z-index: 900; justify-content: space-around; 
+    padding: 10px 0 calc(env(safe-area-inset-bottom, 0px) + 10px) 0; box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
+  }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; background: none; border: none; color: var(--text-muted); font-size: 11px; font-weight: 600; cursor: pointer; width: 100%; transition: color 0.2s; }
+  .nav-item svg { width: 24px; height: 24px; stroke-width: 2px; transition: transform 0.2s; }
+  .nav-item.active { color: var(--primary); }
+  .nav-item:active svg { transform: scale(0.85); }
+}
+/* =========================================
+   KHUSUS TOMBOL ROTASI (Memaksimalkan Ruang)
+   ========================================= */
+.btn-rotate {
+  padding: 4px 8px !important; 
+}
+
+.btn-rotate svg {
+  width: 24px !important;  
+  height: 24px !important; 
+  transform: scale(1.3);   
+  transform-origin: center; 
+  stroke-width: 1px !important; /* Tambahkan baris ini untuk menimpa CSS bawaan */
+}
+/* =========================================================
+   KURSOR DRAG UNTUK TOOLBAR
+   ========================================================= */
+.toolbar {
+  cursor: grab;
+}
+
+.toolbar.is-dragging {
+  cursor: grabbing;
+}
+
+.toolbar button, .toolbar input {
+  cursor: pointer;
+}
+
+/* Gaya untuk titik-titik elektron yang mengalir */
+.wire-flow {
+  stroke-dasharray: 8 8; /* Panjang garis 8px, celah 8px */
+  stroke-linecap: round;
+  stroke: rgba(255, 255, 255, 0.8) !important; /* Warna elektron putih terang */
+  stroke-width: 2.5 !important;
+  pointer-events: none; /* Agar tidak menghalangi klik kabel */
+  
+  /* Panggil animasi. Kecepatan (1s) nanti bisa diubah dinamis lewat JS */
+  animation: flowAnim 1s linear infinite; 
+}
+
+/* Jika arus mengalir terbalik (dari target ke source) */
+.wire-flow-reverse {
+  animation-direction: reverse;
+}
+
+/* Keyframe Animasi Bergerak */
+@keyframes flowAnim {
+  from { stroke-dashoffset: 16; } /* Harus kelipatan dari total dasharray (8+8=16) */
+  to { stroke-dashoffset: 0; }
+}

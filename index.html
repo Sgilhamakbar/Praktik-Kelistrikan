@@ -1,0 +1,1207 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Lab Rangkaian Digital - Build Your Own Circuit V18.2 (Fixed)</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<input type="file" id="importFileInput" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+<div class="app-container">
+
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-top-fixed">
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--primary)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+          <span class="title-text">Simulasi Listrik</span>
+        </div>
+      
+      <style>
+        #closeMenuBtn { display: none; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; }
+        #collapseSidebarBtn { 
+          background: transparent;  
+          border: none;             
+          box-shadow: none;         
+          color: var(--text-muted); 
+          cursor: pointer; 
+          width: 32px; 
+          height: 32px; 
+          border-radius: 6px;       
+          display: flex; 
+          align-items: center; 
+          justify-content: center;
+          margin-left: auto;        
+          transition: background 0.2s, color 0.2s, transform 0.1s;
+        }
+        #collapseSidebarBtn svg { width: 22px; height: 22px; transition: transform 0.3s ease; }
+        #collapseSidebarBtn:hover { background: var(--control-bg); color: var(--text-main); }
+        #collapseSidebarBtn:active { transform: scale(0.92); }
+        @media (max-width: 768px) { 
+            #closeMenuBtn { display: flex; align-items: center; } 
+            #collapseSidebarBtn { display: none; } 
+        }
+      </style>
+      <button id="collapseSidebarBtn" title="Lipat Panel">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 4h9v16h-9"></path>
+          <path d="M15 16l-4-4 4-4"></path>
+        </svg>
+      </button>
+      <button id="closeMenuBtn" title="Tutup Menu">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="sidebar-search" style="padding: 12px 15px; position: relative; border-bottom: 1px solid var(--border-color); background: var(--bg-container);">
+      <div style="display: flex; align-items: center; background: var(--control-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px 10px; transition: background-color 0.3s ease, border-color 0.3s ease;">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--text-muted)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; flex-shrink: 0;"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" id="componentSearch" placeholder="Cari komponen..." style="width: 100%; border: none; background: transparent; color: var(--text-main); font-size: 12px; outline: none; padding: 4px 0;">
+        <button id="clearSearchBtn" style="display: none; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px 4px; flex-shrink: 0;" title="Hapus teks" onmouseover="this.style.color='var(--text-main)'" onmouseout="this.style.color='var(--text-muted)'">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+        <div style="width: 1px; height: 14px; background: var(--border-color); margin: 0 6px; flex-shrink: 0;"></div>
+        <button id="filterToggleBtn" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px; flex-shrink: 0; position: relative;" title="Filter Kategori" onmouseover="this.style.color='var(--primary)'" onmouseout="if(document.getElementById('filterDropdown').style.display==='none') this.style.color='var(--text-muted)'">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+          <span id="filterActiveDot" style="display: none; position: absolute; top: 0; right: 0; width: 6px; height: 6px; background: var(--primary); border-radius: 50%;"></span>
+        </button>
+      </div>
+
+      <div id="filterDropdown" style="display: none; position: absolute; top: calc(100% - 5px); right: 15px; background: var(--control-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 0; width: 180px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); z-index: 100;">
+        <div style="font-size: 10px; color: var(--text-muted); padding: 0 12px 6px 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;">Filter Kategori</div>
+        <div style="display: flex; flex-direction: column;">
+          <label style="font-size: 12px; color: var(--text-main); padding: 6px 12px; cursor: pointer; display: flex; align-items: center;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='transparent'">
+            <input type="radio" name="catFilter" value="all" checked style="margin-right: 8px; accent-color: var(--primary);"> Semua Komponen </label>
+          <label style="font-size: 12px; color: var(--text-main); padding: 6px 12px; cursor: pointer; display: flex; align-items: center;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='transparent'">
+            <input type="radio" name="catFilter" value="digital" style="margin-right: 8px; accent-color: var(--primary);"> Digital & Logika </label>
+          <label style="font-size: 12px; color: var(--text-main); padding: 6px 12px; cursor: pointer; display: flex; align-items: center;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='transparent'">
+            <input type="radio" name="catFilter" value="analog" style="margin-right: 8px; accent-color: var(--primary);"> Analog & Daya </label>
+          <label style="font-size: 12px; color: var(--text-main); padding: 6px 12px; cursor: pointer; display: flex; align-items: center;" onmouseover="this.style.background='var(--border-color)'" onmouseout="this.style.background='transparent'">
+            <input type="radio" name="catFilter" value="alat" style="margin-right: 8px; accent-color: var(--primary);"> Alat Ukur </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- 1. SUMBER DAYA & KELISTRIKAN (POWER) -->
+    <div class="sidebar-section">
+      <h4>Sumber Daya & Kelistrikan</h4>
+      <div class="component-card" draggable="true" data-type="battery_1cell" data-inputs="0" data-outputs="2">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="10" y2="12"/><line x1="19" y1="12" x2="14" y2="12"/><line x1="10" y1="6" x2="10" y2="18"/><line x1="14" y1="8" x2="14" y2="16" stroke-width="4"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Baterai 1 Sel</div><div class="comp-desc">DC 1.5V (Baterai AA)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="battery_multi" data-inputs="0" data-outputs="2">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="12" x2="6" y2="12"/><line x1="22" y1="12" x2="18" y2="12"/><line x1="6" y1="6" x2="6" y2="18"/><line x1="10" y1="8" x2="10" y2="16" stroke-width="3"/><line x1="14" y1="6" x2="14" y2="18"/><line x1="18" y1="8" x2="18" y2="16" stroke-width="3"/><line x1="11" y1="12" x2="13" y2="12" stroke-dasharray="1 1"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Baterai Multi Sel</div><div class="comp-desc">DC 12V (Aki)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="vsine" data-inputs="0" data-outputs="2">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M7 12c1.5-4 3.5-4 5 0s3.5 4 5 0"></path></svg></div>
+        <div class="comp-info"><div class="comp-name">V-Sine (AC)</div><div class="comp-desc">Generator Gelombang Sinus</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="transformer" data-inputs="2" data-outputs="3">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4v16 M18 4v16 M12 2v20 M14 2v20"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Transformator</div><div class="comp-desc">Trafo 2P3S (CT)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="transformer_2p2s" data-inputs="2" data-outputs="2">
+        <div class="comp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="10" y1="4" x2="10" y2="20"></line>
+            <line x1="14" y1="4" x2="14" y2="20"></line>
+            <path d="M4 6h2c2 0 2 3 0 3H4"></path>
+            <path d="M4 15h2c2 0 2 3 0 3H4"></path>
+            <path d="M20 6h-2c-2 0-2 3 0 3h2"></path>
+            <path d="M20 15h-2c-2 0-2 3 0 3h2"></path>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Trafo 2P2S</div>
+          <div class="comp-desc">Step-Down/Up (Non-CT)</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="power_terminal" data-inputs="0" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="20" x2="12" y2="4"></line><polyline points="7 9 12 4 17 9"></polyline></svg></div>
+        <div class="comp-info"><div class="comp-name">Terminal Power</div><div class="comp-desc">Sumber Tegangan VCC</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ground" data-inputs="1" data-outputs="0">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v10M4 12h16M7 16h10M10 20h4"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Ground Massa</div><div class="comp-desc">0V Referensi</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="output_terminal" data-inputs="1" data-outputs="0">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="6"></circle><line x1="2" y1="12" x2="6" y2="12"></line><rect x="14" y="9" width="8" height="6" rx="1"></rect></svg></div>
+        <div class="comp-info"><div class="comp-name">Terminal Output</div><div class="comp-desc">Probe/Ujung Output</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="fuse" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 12h5l2-5 2 10 2-5h5"/><rect x="2" y="6" width="20" height="12" rx="2"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Sekering (Fuse)</div><div class="comp-desc">Proteksi Arus (A)</div></div>
+      </div>
+    </div>
+
+    <!-- 2. SAKELAR DIGITAL & KONTROL MANUAL -->
+    <div class="sidebar-section">
+      <h4>Sakelar Digital & Kontrol</h4>
+      <div class="component-card" draggable="true" data-type="switch" data-inputs="0" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="1" y="5" width="22" height="14" rx="7" ry="7"></rect><circle cx="8" cy="12" r="3"></circle></svg></div>
+        <div class="comp-info"><div class="comp-name">Switch Digital</div><div class="comp-desc">Logika 1/0 (5V/0V)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="push_button" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h4m8 0h4M8 12l8-4"/><line x1="12" y1="8" x2="12" y2="3"/><rect x="9" y="1" width="6" height="2" fill="currentColor"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Push Button (NO)</div><div class="comp-desc">Sakelar Tekan Momentary</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="push_button_nc" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h4m8 0h4"/><rect x="8" y="12" width="8" height="2" fill="currentColor"/><line x1="12" y1="12" x2="12" y2="6"/><rect x="9" y="4" width="6" height="2" fill="currentColor"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Push Button (NC)</div><div class="comp-desc">Normally Closed (Pemutus)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="switch_spst" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="5" y1="12" x2="9" y2="12"/><line x1="15" y1="12" x2="19" y2="12"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><line x1="9" y1="12" x2="14" y2="8"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Saklar SPST</div><div class="comp-desc">Pemutus Arus ON/OFF</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="switch_spdt" data-inputs="1" data-outputs="2">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="6" cy="12" r="2" fill="currentColor"/><circle cx="18" cy="7" r="2" fill="currentColor"/><circle cx="18" cy="17" r="2" fill="currentColor"/><line x1="7" y1="11" x2="16" y2="8"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Switch SPDT</div><div class="comp-desc">Sakelar Tukar (3 Pin)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="switch_dpst" data-inputs="2" data-outputs="2">
+        <div class="comp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <!-- Kutub Atas -->
+            <line x1="4" y1="9" x2="8" y2="9"/><line x1="16" y1="9" x2="20" y2="9"/>
+            <!-- Kutub Bawah -->
+            <line x1="4" y1="15" x2="8" y2="15"/><line x1="16" y1="15" x2="20" y2="15"/>
+            <!-- Engsel & Titik Kontak -->
+            <circle cx="8" cy="9" r="1"/><circle cx="16" cy="9" r="1"/>
+            <circle cx="8" cy="15" r="1"/><circle cx="16" cy="15" r="1"/>
+            <!-- Tuas/Plat (Terbuka) -->
+            <line x1="8" y1="9" x2="14" y2="6"/><line x1="8" y1="15" x2="14" y2="12"/>
+            <!-- Garis Putus-putus (Penghubung Mekanis) -->
+            <line x1="11" y1="7.5" x2="11" y2="13.5" stroke-dasharray="2 2" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Saklar DPST</div>
+          <div class="comp-desc">Saklar Ganda (4 Pin)</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="potentiometer" data-inputs="2" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16 M12 6v6 M9 9l3-3 3 3"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Potensiometer</div><div class="comp-desc">Resistor Variabel</div></div>
+      </div>
+    </div>
+
+    <!-- 3. KABEL & KOMPONEN PASIF -->
+    <div class="sidebar-section">
+      <h4>Kabel & Komponen Pasif</h4>
+      <div class="component-card" draggable="true" data-type="wire_1to1" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><line x1="4" y1="12" x2="20" y2="12"/><circle cx="4" cy="12" r="1"/><circle cx="20" cy="12" r="1"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Kabel Ekstensi</div><div class="comp-desc">Sambungan Lurus</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="wire_1to2" data-inputs="1" data-outputs="2">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 12h8v-6h8 M12 12v6h8"/><circle cx="4" cy="12" r="1"/><circle cx="20" cy="6" r="1"/><circle cx="20" cy="18" r="1"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Kabel Cabang 2</div><div class="comp-desc">1 In, 2 Out</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="junction" data-inputs="1" data-outputs="3">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3" fill="currentColor"/><path d="M12 2v7m0 6v7m-10-10h7m6 0h7"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Node Cabang 3</div><div class="comp-desc">Bagi 1 ke 3 arah</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="net_tunnel" data-inputs="1" data-outputs="0">
+        <div class="comp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 12 h6 l3 -6 h11 v12 h-11 z" fill="#3b82f6" stroke="#1e293b"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Net Tunnel</div>
+          <div class="comp-desc">Kabel Virtual (Nirkabel)</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="voltage_divider" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="6" width="16" height="12" rx="2"></rect><line x1="12" y1="6" x2="12" y2="18"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line></svg></div>
+        <div class="comp-info"><div class="comp-name">Voltage Divider</div><div class="comp-desc">Modul Vout = Vin × R2/(R1+R2)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="resistor" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linejoin="round"><path d="M2 12h3l2.5-5 5 10 5-10 2.5 5h3"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Resistor</div><div class="comp-desc">Hambatan (Ohm)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="capacitor" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="2" y1="12" x2="10" y2="12"/><line x1="14" y1="12" x2="22" y2="12"/><line x1="10" y1="6" x2="10" y2="18"/><line x1="14" y1="6" x2="14" y2="18"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Kapasitor</div><div class="comp-desc">Penyimpan Muatan (F)</div></div>
+      </div>
+    </div>
+
+    <!-- 4. SEMIKONDUKTOR ANALOG -->
+    <div class="sidebar-section">
+      <h4>Semikonduktor Analog</h4>
+      <div class="component-card" draggable="true" data-type="diode" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M2 12h4m16 0h-4M6 4l12 8-12 8zM18 4v16"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Dioda Penyearah</div><div class="comp-desc">Penyearah Arus DC</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="zener_diode" data-inputs="1" data-outputs="1">
+        <div class="comp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 12h4m16 0h-4M6 4l12 8-12 8z"/>
+            <!-- Garis Katoda melengkung khas Zener -->
+            <path d="M20 6h-2v12h-2"/> 
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Dioda Zener</div>
+          <div class="comp-desc">Regulator Tegangan (Vz)</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="diode_bridge" data-inputs="2" data-outputs="2">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" transform="rotate(45 12 12)"></rect></svg></div>
+        <div class="comp-info"><div class="comp-name">Dioda Bridge</div><div class="comp-desc">Penyearah / Pelindung Polaritas</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="bjt_npn" data-inputs="2" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><line x1="7" y1="12" x2="11" y2="12"></line><line x1="11" y1="7" x2="11" y2="17"></line><line x1="11" y1="9" x2="16" y2="6"></line><line x1="11" y1="15" x2="16" y2="18"></line></svg></div>
+        <div class="comp-info"><div class="comp-name">Transistor NPN</div><div class="comp-desc">BJT Saklar / Penguat</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="bjt_pnp" data-inputs="2" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><line x1="7" y1="12" x2="11" y2="12"></line><line x1="11" y1="7" x2="11" y2="17"></line><line x1="11" y1="9" x2="16" y2="6"></line><line x1="11" y1="15" x2="16" y2="18"></line></svg></div>
+        <div class="comp-info"><div class="comp-name">Transistor PNP</div><div class="comp-desc">BJT Saklar (Aktif Low)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="mosfet_n" data-inputs="2" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><line x1="7" y1="9" x2="7" y2="15"></line><line x1="7" y1="12" x2="11" y2="12"></line><line x1="11" y1="7" x2="11" y2="17"></line><line x1="11" y1="7" x2="16" y2="7"></line><line x1="11" y1="17" x2="16" y2="17"></line></svg></div>
+        <div class="comp-info"><div class="comp-name">MOSFET N-Ch</div><div class="comp-desc">Power Switch High-Side</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="mosfet_p" data-inputs="2" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><line x1="7" y1="9" x2="7" y2="15"></line><line x1="7" y1="12" x2="11" y2="12"></line><line x1="11" y1="7" x2="11" y2="17"></line><line x1="11" y1="7" x2="16" y2="7"></line><line x1="11" y1="17" x2="16" y2="17"></line></svg></div>
+        <div class="comp-info"><div class="comp-name">MOSFET P-Ch</div><div class="comp-desc">Power Switch Low-Side</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="opamp_lm741" data-inputs="4" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><polygon points="5,5 19,12 5,19" fill="#1e293b"/><path d="M2 9h3 M2 15h3 M19 12h3" stroke-width="2"/><path d="M12 2v4 M12 22v-4" stroke-width="2"/></svg></div>
+        <div class="comp-info"><div class="comp-name">LM741 (Op-Amp)</div><div class="comp-desc">Penguat Tegangan Analog</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="opamp" data-inputs="2" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="6,4 18,12 6,20"></polygon></svg></div>
+        <div class="comp-info"><div class="comp-name">Op-Amp 741 (Basic)</div><div class="comp-desc">Komparator / Penguat</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="opamp_5pin" data-inputs="4" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="4,5 20,12 4,19"></polygon><line x1="12" y1="5" x2="12" y2="2"></line><line x1="12" y1="19" x2="12" y2="22"></line></svg></div>
+        <div class="comp-info"><div class="comp-name">Op-Amp 5-Pin</div><div class="comp-desc">Model V+ dan V-</div></div>
+      </div>
+    </div>
+
+    <!-- 4a. SEMIKONDUKTOR DIGITAL -->
+    <div class="sidebar-section">
+    <h4>Mikrokontroler (Terprogram)</h4>
+    <!-- data-inputs="22" menandakan 22 kaki kabel -->
+    <div class="component-card" draggable="true" data-type="arduino_uno" data-inputs="22" data-outputs="0">
+        <div class="comp-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#00979C" stroke-width="2">
+                <rect x="3" y="5" width="18" height="14" rx="2" fill="#0f172a"/>
+                <circle cx="8" cy="12" r="2" fill="#00979C"/>
+                <circle cx="16" cy="12" r="2" fill="#00979C"/>
+                <path d="M12 9v6" stroke="#00979C"/>
+            </svg>
+        </div>
+        <div class="comp-info">
+            <div class="comp-name">Arduino Uno</div>
+            <div class="comp-desc">Dapat diprogram dengan JS</div>
+        </div>
+    </div>
+</div>
+
+    <!-- 5. SENSOR FISIKA -->
+    <div class="sidebar-section">
+      <h4>Sensor Fisika</h4>
+      <div class="component-card" draggable="true" data-type="ldr" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><path d="M10 12h4 M8 8l2 2 M8 16l2-2"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Sensor LDR</div><div class="comp-desc">Resistor Cahaya</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="thermistor_ntc" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="6"/><path d="M4 18h3l9-13"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Thermistor NTC</div><div class="comp-desc">Suhu Naik, R Turun</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="thermistor_ptc" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="6"/><path d="M4 18h3l9-13"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Thermistor PTC</div><div class="comp-desc">Suhu Naik, R Naik</div></div>
+      </div>
+    </div>
+    <div class="component-card" draggable="true" data-type="sensor_lm35" data-inputs="2" data-outputs="1">
+        <div class="comp-icon">
+          <!-- Ikon Skema Sensor (Kiri, Kanan, Bawah) -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <!-- Bodi Skema -->
+            <rect x="6" y="6" width="12" height="10" rx="1" fill="currentColor"/>
+            <!-- Tiga Kabel -->
+            <line x1="2" y1="11" x2="6" y2="11"/>   <!-- Kiri (GND) -->
+            <line x1="18" y1="11" x2="22" y2="11"/> <!-- Kanan (VCC) -->
+            <line x1="12" y1="16" x2="12" y2="22"/> <!-- Bawah (OUT) -->
+            <!-- Teks Suhu -->
+            <text x="12" y="13" font-size="6" font-weight="bold" text-anchor="middle" fill="#fff">°C</text>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Sensor Suhu LM35</div>
+          <div class="comp-desc">Output Presisi 10mV/°C</div>
+        </div>
+      </div>
+
+    <!-- 6. AKTUATOR & INDIKATOR OUTPUT -->
+    <div class="sidebar-section">
+      <h4>Aktuator & Indikator Output</h4>
+      <div class="component-card" draggable="true" data-type="lamp" data-inputs="1" data-outputs="1">
+        <div class="comp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18h6"></path>
+            <path d="M10 22h4"></path>
+            <path d="M12 2v1"></path>
+            <path d="M12 7v5"></path>
+            <path d="M9 9l-2-2"></path>
+            <path d="M15 9l2-2"></path>
+            <circle cx="12" cy="11" r="5"></circle>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Lampu Pijar</div>
+          <div class="comp-desc">Beban Resistif Cahaya</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="led" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1.45.62 2.84 1.5 3.5.76.75 1.23 1.51 1.41 2.5"/></svg></div>
+        <div class="comp-info"><div class="comp-name">LED Indikator</div><div class="comp-desc">Lampu Beban Terang</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="seven_segment" data-inputs="7" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2" fill="#0f172a"/><path d="M9 6h6 M8 8v3 M16 8v3 M9 12h6 M8 14v3 M16 14v3 M9 18h6" stroke="#facc15" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+        <div class="comp-info"><div class="comp-name">7-Segment</div><div class="comp-desc">Layar Angka (Katoda Umum)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="led_bargraph" data-inputs="11" data-outputs="0">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2" fill="#0f172a" stroke="#cbd5e1" stroke-width="1"/><line x1="8" y1="5" x2="16" y2="5" stroke="#ef4444" stroke-width="2"/><line x1="8" y1="10" x2="16" y2="10" stroke="#eab308" stroke-width="2"/><line x1="8" y1="15" x2="16" y2="15" stroke="#22c55e" stroke-width="2"/><line x1="8" y1="20" x2="16" y2="20" stroke="#334155" stroke-width="2"/></svg></div>
+        <div class="comp-info"><div class="comp-name">LED Bargraph</div><div class="comp-desc">10 Segmen Bar Display</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="led_bargraph_cc" data-inputs="11" data-outputs="0">
+        <div class="comp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round">
+            <rect x="6" y="2" width="12" height="20" rx="2" fill="#0f172a" stroke="#cbd5e1" stroke-width="1"/>
+            <line x1="8" y1="5" x2="16" y2="5" stroke="#ef4444" stroke-width="2"/>
+            <line x1="8" y1="10" x2="16" y2="10" stroke="#eab308" stroke-width="2"/>
+            <line x1="8" y1="15" x2="16" y2="15" stroke="#22c55e" stroke-width="2"/>
+            <!-- Indikator panah Ground di bawah untuk Common Cathode -->
+            <path d="M12 20v3m-2 0h4" stroke="#64748b" stroke-width="1.5"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">LED Bargraph (CC)</div>
+          <div class="comp-desc">Aktif Tinggi (Common Cathode)</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="motor_dc" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/><text x="12" y="16" text-anchor="middle" font-size="10" font-weight="bold">M</text></svg></div>
+        <div class="comp-info"><div class="comp-name">Motor DC</div><div class="comp-desc">Mesin Berputar (RPM)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="speaker" data-inputs="2" data-outputs="0">
+        <div class="comp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Speaker 8Ω</div>
+          <div class="comp-desc">Transduser Suara (Buzzer)</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="servo" data-inputs="3" data-outputs="0">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="8" width="16" height="12" rx="2"/><circle cx="12" cy="8" r="4"/><path d="M12 4v4"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Servo Motor</div><div class="comp-desc">Penggerak Sudut Derajat</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="solenoid" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/><line x1="12" y1="6" x2="12" y2="2"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Solenoid Valve</div><div class="comp-desc">Katup Pendorong Elektrik</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="flasher" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg></div>
+        <div class="comp-info"><div class="comp-name">Flasher Relay</div><div class="comp-desc">Sakelar Kedip (Lampu Sein)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="relay" data-inputs="2" data-outputs="2">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect><line x1="4" y1="12" x2="20" y2="12"></line><circle cx="12" cy="8" r="2"></circle><circle cx="12" cy="16" r="2"></circle></svg></div>
+        <div class="comp-info"><div class="comp-name">Relay 4 Kaki</div><div class="comp-desc">Sakelar Elektromagnetik (SPST)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="relay_5pin" data-inputs="2" data-outputs="3">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"></rect><line x1="4" y1="8" x2="20" y2="8"></line><circle cx="12" cy="5" r="1.5"></circle><circle cx="12" cy="14" r="1.5"></circle><circle cx="12" cy="19" r="1.5"></circle></svg></div>
+        <div class="comp-info"><div class="comp-name">Relay 5 Kaki</div><div class="comp-desc">Sakelar Elektromagnetik (SPDT)</div></div>
+      </div>
+    </div>
+
+    <!-- 7. SIRKUIT DIGITAL & GERBANG LOGIKA -->
+    <div class="sidebar-section">
+      <h4>Sirkuit Digital & Gerbang Logika</h4>
+      <div class="component-card" draggable="true" data-type="clock_pulse" data-inputs="0" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="2,12 6,12 10,4 14,20 18,12 22,12"></polyline></svg></div>
+        <div class="comp-info"><div class="comp-name">Clock (Pulse)</div><div class="comp-desc">Detak Digital Otomatis</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="and" data-inputs="2" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h8a8 8 0 0 1 8 8 8 8 0 0 1-8 8H4z"/><path d="M4 8h-2m2 8h-2m18-4h2"/></svg></div>
+        <div class="comp-info"><div class="comp-name">AND Gate</div><div class="comp-desc">IC 7408</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="or" data-inputs="2" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4c6 0 12 2 16 8-4 6-10 8-16 8 2-5 2-11 0-16z"/><path d="M4 8h-2m2 8h-2m18-4h2"/></svg></div>
+        <div class="comp-info"><div class="comp-name">OR Gate</div><div class="comp-desc">IC 7432</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="not" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4l12 8-12 8z"/><circle cx="18" cy="12" r="2"/><path d="M4 12h-2m18 0h2"/></svg></div>
+        <div class="comp-info"><div class="comp-name">NOT Gate</div><div class="comp-desc">IC 7404</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="nand" data-inputs="2" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4h6a6 6 0 0 1 6 6 6 6 0 0 1-6 6H4z"/><circle cx="18" cy="12" r="2"/><path d="M4 8h-2m2 8h-2m18-4h2"/></svg></div>
+        <div class="comp-info"><div class="comp-name">NAND Gate</div><div class="comp-desc">IC 7400</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="nor" data-inputs="2" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M4 4c4 0 10 2 12 8-2 6-8 8-12 8 2-5 2-11 0-16z"/><circle cx="18" cy="12" r="2"/><path d="M4 8h-2m2 8h-2m18-4h2"/></svg></div>
+        <div class="comp-info"><div class="comp-name">NOR Gate</div><div class="comp-desc">IC 7402</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="xor" data-inputs="2" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M8 4c6 0 12 2 16 8-4 6-10 8-16 8 2-5 2-11 0-16z"/><path d="M4 4c2 5 2 11 0 16"/><path d="M8 8h-6m6 8h-6m18-4h2"/></svg></div>
+        <div class="comp-info"><div class="comp-name">XOR Gate</div><div class="comp-desc">IC 7486</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="xnor" data-inputs="2" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 4c4 0 10 2 12 8-2 6-8 8-12 8 2-5 2-11 0-16z"/><path d="M2 4c2 5 2 11 0 16"/><circle cx="20" cy="12" r="2"/><path d="M6 8H2m4 8H2m20-4h2"/></svg></div>
+        <div class="comp-info"><div class="comp-name">XNOR Gate</div><div class="comp-desc">IC 74266</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ff_sr" data-inputs="3" data-outputs="2">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="4" y1="8" x2="9" y2="8"/><line x1="4" y1="16" x2="9" y2="16"/><line x1="4" y1="12" x2="7" y2="12"/><line x1="15" y1="8" x2="20" y2="8"/><line x1="15" y1="16" x2="20" y2="16"/></svg></div>
+        <div class="comp-info"><div class="comp-name">SR Flip-Flop</div><div class="comp-desc">Latch Dasar S-R Clocked</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ff_d" data-inputs="4" data-outputs="2">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="4" y1="8" x2="9" y2="8"/><line x1="4" y1="16" x2="7" y2="14"/><line x1="4" y1="16" x2="7" y2="18"/><line x1="15" y1="8" x2="20" y2="8"/><line x1="15" y1="16" x2="20" y2="16"/></svg></div>
+        <div class="comp-info"><div class="comp-name">D Flip-Flop</div><div class="comp-desc">Data Latch (IC 7474)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ff_jk" data-inputs="5" data-outputs="2">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="4" y1="6" x2="9" y2="6"/><line x1="4" y1="18" x2="9" y2="18"/><line x1="4" y1="12" x2="7" y2="12"/><line x1="15" y1="6" x2="20" y2="6"/><line x1="15" y1="18" x2="20" y2="18"/></svg></div>
+        <div class="comp-info"><div class="comp-name">JK Flip-Flop</div><div class="comp-desc">Universal FF (IC 7476)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ff_t" data-inputs="2" data-outputs="2">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="4" y1="8" x2="9" y2="8"/><line x1="4" y1="16" x2="7" y2="16"/><line x1="15" y1="8" x2="20" y2="8"/><line x1="15" y1="16" x2="20" y2="16"/></svg></div>
+        <div class="comp-info"><div class="comp-name">T Flip-Flop</div><div class="comp-desc">Toggle Flip-Flop</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ic_555" data-inputs="6" data-outputs="2">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="12" height="16" rx="1"/><line x1="2" y1="6" x2="6" y2="6"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="2" y1="18" x2="6" y2="18"/><line x1="18" y1="6" x2="22" y2="6"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="18" y1="18" x2="22" y2="18"/></svg></div>
+        <div class="comp-info"><div class="comp-name">IC 555 Timer</div><div class="comp-desc">Pembangkit Pulsa & Osilator</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ic_4017" data-inputs="5" data-outputs="11">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="2" y1="6" x2="5" y2="6"/><line x1="2" y1="10" x2="5" y2="10"/><line x1="2" y1="14" x2="5" y2="14"/><line x1="2" y1="18" x2="5" y2="18"/><line x1="19" y1="6" x2="22" y2="6"/><line x1="19" y1="10" x2="22" y2="10"/><line x1="19" y1="14" x2="22" y2="14"/><line x1="19" y1="18" x2="22" y2="18"/></svg></div>
+        <div class="comp-info"><div class="comp-name">IC 4017</div><div class="comp-desc">Decade Counter (10 Output)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ic_4518" data-inputs="3" data-outputs="4">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="4" width="14" height="16" rx="2"/><line x1="2" y1="7" x2="5" y2="7"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="2" y1="17" x2="5" y2="17"/><line x1="19" y1="6" x2="22" y2="6"/><line x1="19" y1="10" x2="22" y2="10"/><line x1="19" y1="14" x2="22" y2="14"/><line x1="19" y1="18" x2="22" y2="18"/></svg></div>
+        <div class="comp-info"><div class="comp-name">IC 4518 (Ideal)</div><div class="comp-desc">BCD Up-Counter (0-9)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ic_4518_dual" data-inputs="8" data-outputs="8">
+        <div class="comp-icon">
+          <!-- Icon DIP-16 Raksasa -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="6" y="2" width="12" height="20" rx="2"/>
+            <path d="M2 3h4 M2 5.5h4 M2 8h4 M2 10.5h4 M2 13h4 M2 15.5h4 M2 18h4 M2 20.5h4"/>
+            <path d="M22 3h-4 M22 5.5h-4 M22 8h-4 M22 10.5h-4 M22 13h-4 M22 15.5h-4 M22 18h-4 M22 20.5h-4"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">IC CD4518B</div>
+          <div class="comp-desc">Dual BCD Counter (DIP-16)</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ic_74164" data-inputs="4" data-outputs="8">
+    <div class="comp-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="6" y="2" width="12" height="20" rx="2"/>
+            <path d="M2 4h4 M2 9h4 M2 15h4 M2 20h4"/>
+            <path d="M22 3h-4 M22 6h-4 M22 9h-4 M22 12h-4 M22 15h-4 M22 18h-4 M22 21h-4"/>
+        </svg>
+    </div>
+    <div class="comp-info">
+        <div class="comp-name">IC 74164</div>
+        <div class="comp-desc">8-Bit Shift Register (Serial In)</div>
+    </div>
+</div>
+      <div class="component-card" draggable="true" data-type="ic_7448" data-inputs="9" data-outputs="7">
+        <div class="comp-icon">
+          <!-- Ikon SVG DIP-16 (8 Pin Kiri, 8 Pin Kanan) -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="6" y="2" width="12" height="20" rx="2"/>
+            <path d="M2 3h4 M2 5.5h4 M2 8h4 M2 10.5h4 M2 13h4 M2 15.5h4 M2 18h4 M2 20.5h4"/>
+            <path d="M22 3h-4 M22 5.5h-4 M22 8h-4 M22 10.5h-4 M22 13h-4 M22 15.5h-4 M22 18h-4 M22 20.5h-4"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">IC 7448</div>
+          <div class="comp-desc">Decoder BCD ke 7-Seg (CC)</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ic_74LS90" data-inputs="8" data-outputs="4">
+        <div class="comp-icon">
+          <!-- Ikon SVG DIP-14 (7 Pin Kiri, 7 Pin Kanan) -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="6" y="3" width="12" height="18" rx="2"/>
+            <path d="M2 4h4 M2 6.5h4 M2 9h4 M2 11.5h4 M2 14h4 M2 16.5h4 M2 19h4"/>
+            <path d="M22 4h-4 M22 6.5h-4 M22 9h-4 M22 11.5h-4 M22 14h-4 M22 16.5h-4 M22 19h-4"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">IC 74LS90</div>
+          <div class="comp-desc">Decade Counter (Mod-10)</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ic_4051" data-inputs="8" data-outputs="8">
+        <div class="comp-icon">
+          <!-- Icon DIP-16 -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="6" y="2" width="12" height="20" rx="2"/>
+            <path d="M2 3h4 M2 5.5h4 M2 8h4 M2 10.5h4 M2 13h4 M2 15.5h4 M2 18h4 M2 20.5h4"/>
+            <path d="M22 3h-4 M22 5.5h-4 M22 8h-4 M22 10.5h-4 M22 13h-4 M22 15.5h-4 M22 18h-4 M22 20.5h-4"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">IC CD4051B</div>
+          <div class="comp-desc">8-Ch Analog Mux (DIP-16)</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ic_7805" data-inputs="2" data-outputs="1">
+        <div class="comp-icon">
+          <!-- Icon TO-220 -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <!-- Besi Pendingin & Lubang -->
+            <rect x="6" y="2" width="12" height="6" rx="1"/>
+            <circle cx="12" cy="5" r="1.5"/>
+            <!-- Bodi IC -->
+            <rect x="5" y="8" width="14" height="10" rx="1" fill="currentColor"/>
+            <!-- Tiga Kaki (IN, GND, OUT) -->
+            <line x1="7" y1="18" x2="7" y2="23"/>
+            <line x1="12" y1="18" x2="12" y2="23"/>
+            <line x1="17" y1="18" x2="17" y2="23"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">IC 7805</div>
+          <div class="comp-desc">Regulator Tegangan 5V</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ic_7808" data-inputs="2" data-outputs="1">
+        <div class="comp-icon">
+          <!-- Icon TO-220 -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <!-- Besi Pendingin & Lubang -->
+            <rect x="6" y="2" width="12" height="6" rx="1"/>
+            <circle cx="12" cy="5" r="1.5"/>
+            <!-- Bodi IC -->
+            <rect x="5" y="8" width="14" height="10" rx="1" fill="currentColor"/>
+            <!-- Tiga Kaki (IN, GND, OUT) -->
+            <line x1="7" y1="18" x2="7" y2="23"/>
+            <line x1="12" y1="18" x2="12" y2="23"/>
+            <line x1="17" y1="18" x2="17" y2="23"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">IC 7808</div>
+          <div class="comp-desc">Regulator Tegangan 8V</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ic_4511" data-inputs="7" data-outputs="7">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M2 4h4 M2 8h4 M2 12h4 M2 16h4 M2 20h4"/><path d="M22 4h-4 M22 8h-4 M22 12h-4 M22 16h-4 M22 20h-4"/></svg></div>
+        <div class="comp-info"><div class="comp-name">IC 4511</div><div class="comp-desc">Decoder BCD ke 7-Segmen</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ic_4026" data-inputs="4" data-outputs="10">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="2" width="12" height="20" rx="2"/><path d="M2 5h4 M2 9h4 M2 15h4 M2 19h4"/><path d="M22 3h-4 M22 5.5h-4 M22 8h-4 M22 10.5h-4 M22 13h-4 M22 15.5h-4 M22 18h-4 M22 20.5h-4"/></svg></div>
+        <div class="comp-info"><div class="comp-name">IC 4026</div><div class="comp-desc">Counter & Decoder 7-Seg</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ic_78L12" data-inputs="2" data-outputs="1">
+    <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="6" width="12" height="12" rx="2"/><line x1="2" y1="10" x2="6" y2="10"/><line x1="2" y1="16" x2="6" y2="16"/><line x1="18" y1="13" x2="22" y2="13"/></svg></div>
+    <div class="comp-info"><div class="comp-name">IC 78L12</div><div class="comp-desc">Regulator 12V (Max 100mA)</div></div>
+    </div>
+      <div class="component-card" draggable="true" data-type="ic_7812" data-inputs="2" data-outputs="1">
+        <div class="comp-icon">
+          <!-- Ikon SVG TO-220 (Komponen daya dengan pelat pendingin) -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M6 2h12v4H6z" fill="#94a3b8" stroke="none"/>
+            <circle cx="12" cy="4" r="1.5" fill="#0f172a" stroke="none"/>
+            <rect x="5" y="6" width="14" height="11" rx="1" fill="#1e293b"/>
+            <line x1="8" y1="17" x2="8" y2="22" stroke-width="2"/>
+            <line x1="12" y1="17" x2="12" y2="22" stroke-width="2"/>
+            <line x1="16" y1="17" x2="16" y2="22" stroke-width="2"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">IC LM7812</div>
+          <div class="comp-desc">Regulator 12V Daya (Max 1.5A)</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ic_lm3914" data-inputs="8" data-outputs="10">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="1" fill="#1e293b"/><path d="M4 4h3 M4 10h3 M4 16h3 M4 20h3" stroke-width="2"/><path d="M20 3h-3 M20 7h-3 M20 11h-3 M20 15h-3 M20 19h-3" stroke-width="2"/></svg></div>
+        <div class="comp-info"><div class="comp-name">LM3914</div><div class="comp-desc">Driver LED Bar/Dot</div></div>
+      </div>
+    </div>
+
+    <!-- 8. ALAT UKUR -->
+    <div class="sidebar-section">
+      <h4>Alat Ukur</h4>
+      <div class="component-card" draggable="true" data-type="voltmeter" data-inputs="2" data-outputs="0">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="8"/><path d="M10 9l2 6 2-6"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Voltmeter DC</div><div class="comp-desc">Ukur Tegangan (V)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ammeter" data-inputs="1" data-outputs="1">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="8"/><path d="M10 15l2-6 2 6 M11 12h2"/></svg></div>
+        <div class="comp-info"><div class="comp-name">Amperemeter DC</div><div class="comp-desc">Ukur Arus (A)</div></div>
+      </div>
+      <div class="component-card" draggable="true" data-type="voltmeter_ac" data-inputs="2" data-outputs="0">
+        <div class="comp-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M8 14s1.5-2 4-2 4 2 4 2"></path>
+            <text x="12" y="10" text-anchor="middle" font-size="6" font-weight="bold" fill="currentColor" stroke="none">V</text>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Voltmeter AC</div>
+          <div class="comp-desc">Ukur Tegangan Efektif (RMS)</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="ohmmeter" data-inputs="2" data-outputs="0">
+        <div class="comp-icon">
+          <!-- Desain Ikon Ohmmeter dengan Simbol Omega -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="8" stroke-width="2"/>
+            <path d="M8 16a4 4 0 1 1 8 0h2M6 16h2" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="comp-info">
+          <div class="comp-name">Ohmmeter</div>
+          <div class="comp-desc">Ukur Hambatan (Ω)</div>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="oscilloscope" data-inputs="2" data-outputs="0">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"></rect><path d="M2 10h4c1 0 2 2 3 4s2-8 3-8 2 2 3 2h7" stroke="#22c55e" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+        <div class="comp-info" style="gap: 0; line-height: 1;">
+          <span class="comp-name" style="margin-bottom: 0; line-height: 1.2;">Osiloskop (Scope)</span>
+          <span class="comp-desc" style="margin-top: 0; line-height: 1.2;">Grafik Gelombang V/t</span>
+        </div>
+      </div>
+      <div class="component-card" draggable="true" data-type="logic_probe" data-inputs="1" data-outputs="0">
+        <div class="comp-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="4" width="14" height="16" rx="2"></rect><line x1="2" y1="12" x2="6" y2="12"></line><text x="13" y="16" font-size="10" font-weight="bold" stroke="none" fill="currentColor">0/1</text></svg></div>
+        <div class="comp-info"><div class="comp-name">Logic Probe</div><div class="comp-desc">Cek Status Logika (1/0/Z)</div></div>
+      </div>
+    </div>
+
+  </div> <!-- End of Sidebar -->
+
+  <div class="canvas-container">
+    <div class="toolbar">
+  <!-- 1. KONTROL SIMULASI & DIAGNOSTIK -->
+  <div style="display: flex; background: var(--control-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px; gap: 4px; align-items: center;">
+    <div id="simIndicator" class="status-indicator status-ready" style="margin-left: 8px;"></div>
+    <span id="simStatusText" style="font-size: 11px; font-weight: bold; margin-right: 8px; color: var(--text-muted); width: 40px;">MATI</span>
+    <button class="btn btn-primary" id="btnPlay" onclick="startSim()" title="Mulai Simulasi" style="padding: 6px 12px;">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+    </button>
+    <button class="btn btn-secondary" id="btnPause" onclick="pauseSim()" title="Jeda Simulasi" style="padding: 6px 12px; opacity: 0.5; cursor: not-allowed;" disabled>
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+    </button>
+    <button class="btn btn-secondary" id="btnStop" onclick="stopSim()" title="Matikan Simulasi" style="padding: 6px 12px; opacity: 0.5; cursor: not-allowed;" disabled>
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" stroke="none"><rect x="4" y="4" width="16" height="16" rx="2"></rect></svg>
+    </button>
+  </div>
+  <button class="btn btn-info" onclick="showTruthTable()" title="Buka Tabel Kebenaran">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Tabel
+  </button>
+
+  <div style="width: 1px; height: 24px; background: var(--border-color); margin: 0 4px;"></div>
+
+  <!-- 2. FILE & RIWAYAT (HISTORI) -->
+  <button class="btn btn-success" onclick="exportCircuit()" title="Simpan ke file">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+  </button>
+  <button class="btn btn-success" onclick="importCircuit()" title="Muat dari file">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+  </button>
+  <button class="btn btn-secondary" id="btnUndo" onclick="undo()" disabled title="Undo (Ctrl+Z)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+  </button>
+  <button class="btn btn-secondary" id="btnRedo" onclick="redo()" disabled title="Redo (Ctrl+Y)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.13-9.36L23 10"></path></svg>
+  </button>
+
+  <div style="width: 1px; height: 24px; background: var(--border-color); margin: 0 4px;"></div>
+
+  <!-- 3. SELEKSI, CLIPBOARD & HAPUS OBJEK -->
+  <button class="btn btn-secondary" id="btnSelectMode" onclick="toggleSelectMode()" title="Mode Pilih Banyak">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+  </button>
+  <button class="btn btn-secondary" onclick="selectAllComponents()" title="Pilih Semua (Ctrl+A)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><rect x="7" y="7" width="10" height="10" fill="currentColor"></rect></svg>
+  </button>
+  <button class="btn btn-secondary" onclick="copySelection()" title="Salin Komponen (Ctrl+C)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+  </button>          
+  <button class="btn btn-secondary" onclick="pasteClipboard()" title="Tempel Komponen (Ctrl+V)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path><rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect></svg>
+  </button>
+  <button class="btn btn-danger" onclick="deleteSelected()" title="Hapus Komponen Terpilih (Del)">
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+  </button>
+
+  <div style="width: 1px; height: 24px; background: var(--border-color); margin: 0 4px;"></div>
+
+  <!-- 4. TRANSFORMASI (ROTASI & PENCERMINAN) -->
+  <button class="btn btn-secondary btn-rotate" onclick="rotateSelected(-90)" title="Putar Kiri 90°">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round">
+      <text x="12" y="14" font-size="6" font-family="system-ui, sans-serif" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">90&deg;</text>
+      <path d="M 5 12 V 16 A 3 3 0 0 0 8 19 H 17 A 3 3 0 0 0 20 16 V 7 A 3 3 0 0 0 17 5 H 11" />
+      <polyline points="12.5 3 9.5 5 12.5 7" />
+    </svg>
+  </button>
+  <button class="btn btn-secondary btn-rotate" onclick="rotateSelected(90)" title="Putar Kanan 90°">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round">
+      <text x="12" y="14" font-size="6" font-family="system-ui, sans-serif" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">90&deg;</text>
+      <path d="M 19 12 V 16 A 3 3 0 0 1 16 19 H 7 A 3 3 0 0 1 4 16 V 7 A 3 3 0 0 1 7 5 H 13" />
+      <polyline points="11.5 3 14.5 5 11.5 7" />
+    </svg>
+  </button>
+  <button class="btn btn-secondary btn-rotate" onclick="rotateSelected(180)" title="Putar Balik 180°">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round">
+      <text x="12" y="14" font-size="6" font-family="system-ui, sans-serif" font-weight="600" fill="currentColor" stroke="none" text-anchor="middle">180&deg;</text>
+      <path d="M 5 13 V 8 A 3 3 0 0 1 8 5 H 17" />
+      <polyline points="15 3 18 5 15 7" />
+      <path d="M 19 11 V 16 A 3 3 0 0 1 16 19 H 7" />
+      <polyline points="9 17 6 19 9 21" />
+    </svg>
+  </button>
+  <button class="btn btn-secondary btn-rotate" onclick="mirrorSelected('X')" title="Cermin Balik Horizontal (X)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2v20"></path><polyline points="16 16 20 12 16 8"></polyline><polyline points="8 16 4 12 8 8"></polyline>
+    </svg>
+  </button>
+  <button class="btn btn-secondary btn-rotate" onclick="mirrorSelected('Y')" title="Cermin Balik Vertikal (Y)">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 12h20"></path><polyline points="16 16 12 20 8 16"></polyline><polyline points="16 8 12 4 8 8"></polyline>
+    </svg>
+  </button>
+
+  <div style="width: 1px; height: 24px; background: var(--border-color); margin: 0 4px;"></div>
+
+  <!-- 5. AKSI PEMBERSIHAN MASSAL (DESTRUKTIF) -->
+  <button class="btn btn-warning" onclick="clearAllWires()" title="Gunting Semua Kabel">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><line x1="20" y1="4" x2="8.12" y2="15.88"></line><line x1="14.47" y1="14.48" x2="20" y2="20"></line><line x1="8.12" y1="8.12" x2="12" y2="12"></line></svg>
+  </button>
+  <button class="btn btn-danger" onclick="clearCanvas()" title="Bersihkan Seluruh Kanvas">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+  </button>
+
+  <!-- 6. KONTROL VIEWPORT, GRID & TEMA (SISI KANAN) -->
+  <div style="margin-left: auto; display: flex; gap: 8px; align-items: center;">
+    <button class="btn btn-secondary" onclick="resetView()" title="Kembali ke Tengah Kanvas">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="3"></circle></svg>
+    </button>
+    <div class="zoom-controls">
+      <button class="zoom-btn" onclick="changeZoom(-0.1)">-</button>
+      <input type="range" id="zoomSlider" min="0.5" max="2" step="0.1" value="1" oninput="setZoom(this.value)">
+      <button class="zoom-btn" onclick="changeZoom(0.1)">+</button>
+      <span id="zoomLabel">100%</span>
+    </div>
+    <button class="btn-theme" onclick="toggleGrid()" title="Tampilkan/Sembunyikan Grid">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="3" y1="15" x2="21" y2="15"></line><line x1="9" y1="3" x2="9" y2="21"></line><line x1="15" y1="3" x2="15" y2="21"></line>
+      </svg>
+    </button>
+    <button class="btn-theme" onclick="toggleFullscreen()" title="Layar Penuh">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+    </button>
+    <button class="btn-theme" id="btnToggleAnim" onclick="toggleAnimations()" title="Matikan Animasi Arus" style="color: #fbbf24;">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+      </svg>
+    </button>
+    <button class="btn-theme" onclick="toggleTheme()" id="btnTheme" title="Ganti Tema">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+    </button>
+  </div>
+</div>
+    <div id="canvas-wrapper">
+      <div id="canvas">
+        <div id="selection-box"></div>
+        <div id="wire-overlay">
+          <svg id="wire-svg" viewBox="0 0 3000 3000" width="3000" height="3000"></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<nav class="bottom-nav-bar">
+  <button class="nav-item active" id="mobileMenuBtn">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+      <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+      <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+      <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+    </svg>
+    <span>Komponen</span>
+  </button>
+  <button class="nav-item" onclick="showTruthTable()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+      <line x1="3" y1="9" x2="21" y2="9"></line>
+      <line x1="9" y1="21" x2="9" y2="9"></line>
+    </svg>
+    <span>Tabel</span>
+  </button>
+  <button class="nav-item" onclick="deleteSelected()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="3 6 5 6 21 6"></polyline>
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+    </svg>
+    <span>Hapus</span>
+  </button>
+</nav>
+
+<div class="modal" id="valueModal">
+  <div class="modal-content" style="position: relative;">
+    <button onclick="closeValueModal()" title="Tutup (Esc)" style="position: absolute; top: 15px; right: 15px; background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; padding: 4px; border-radius: 4px;" onmouseover="this.style.color='var(--danger)'; this.style.background='var(--control-bg)'" onmouseout="this.style.color='var(--text-muted)'; this.style.background='none'">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </button>
+    <h2><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 20V10M18 20V4M6 20v-4" /></svg> Atur Nilai Komponen</h2>
+    <p>Komponen: <strong id="valCompName" style="color:var(--primary)">C1</strong></p>
+    <div id="textInputGroup" class="resistor-input-group" style="display:flex;">
+      <input type="number" id="compValue" min="0.1" max="10000000" step="0.1" placeholder="Nilai">
+      <select id="compUnit"></select>
+    </div>
+    <div id="ledInputGroup" style="display: none; flex-direction: column; gap: 10px; margin-top: 15px;">
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Warna LED</label>
+        <select id="ledColor" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);">
+          <option value="red">Merah (Red)</option>
+          <option value="green">Hijau (Green)</option>
+          <option value="blue">Biru (Blue)</option>
+          <option value="yellow">Kuning (Yellow)</option>
+        </select>
+      </div>
+      <div><label style="font-size: 12px; color: var(--text-muted);">Forward Voltage (V)</label><input type="number" id="ledForwardV" step="0.1" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+      <div><label style="font-size: 12px; color: var(--text-muted);">Full Drive Current (mA)</label><input type="number" id="ledFullDriveI" step="1" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+      <div><label style="font-size: 12px; color: var(--text-muted);">Breakdown Voltage (V)</label><input type="number" id="ledBreakdownV" step="0.1" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+    </div>
+    <div id="lampInputGroup" style="display: none; flex-direction: column; gap: 12px; margin-top: 15px;">
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Tegangan Nominal (Rated Voltage)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+          <input type="number" id="lampRatedV" step="0.1" min="1" max="240" value="12" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);">
+          <span style="font-weight: bold; font-size: 14px; color: var(--primary);">Volt</span>
+        </div>
+      </div>
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Daya Lampu (Nominal Power)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+          <input type="number" id="lampPowerW" step="0.1" min="0.1" max="1000" value="5" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);">
+          <span style="font-weight: bold; font-size: 14px; color: var(--primary);">Watt</span>
+        </div>
+      </div>
+    </div>
+    <div id="ntcInputGroup" style="display: none; flex-direction: column; gap: 10px; margin-top: 15px;">
+      <div><label style="font-size: 12px; color: var(--text-muted);">R25 (Hambatan di 25°C) Ω</label><input type="number" id="ntcR25" step="1" value="10000" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+      <div><label style="font-size: 12px; color: var(--text-muted);">Nilai Beta (β)</label><input type="number" id="ntcBeta" step="1" value="3950" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+    </div>
+    <div id="ptcInputGroup" style="display: none; flex-direction: column; gap: 10px; margin-top: 15px;">
+      <div><label style="font-size: 12px; color: var(--text-muted);">R25 (Hambatan di 25°C) Ω</label><input type="number" id="ptcR25" step="1" value="100" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+      <div><label style="font-size: 12px; color: var(--text-muted);">Nilai Alpha (α)</label><input type="number" id="ptcAlpha" step="0.01" value="0.05" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+    </div>
+    <div id="motorInputGroup" style="display: none; flex-direction: column; gap: 10px; margin-top: 15px;">
+      <div><label style="font-size: 12px; color: var(--text-muted);">Rated Voltage (V)</label><input type="number" id="motorRatedV" step="0.1" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+      <div><label style="font-size: 12px; color: var(--text-muted);">Max RPM (pada Rated Voltage)</label><input type="number" id="motorMaxRPM" step="1" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+      <div><label style="font-size: 12px; color: var(--text-muted);">Coil Resistance (Ω)</label><input type="number" id="motorCoilR" step="0.1" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+    </div>
+    <div id="relayInputGroup" style="display: none; flex-direction: column; gap: 12px; margin-top: 15px;">
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Nominal Coil Voltage</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <input type="number" id="relayCoilV" step="0.1" value="5" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main);">
+            <span style="font-weight: bold; font-size: 14px; color: var(--primary);">Volt</span>
+        </div>
+      </div>
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Coil Resistance</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <input type="number" id="relayCoilR" step="1" value="100" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main);">
+            <span style="font-weight: bold; font-size: 14px; color: var(--primary);">Ohm</span>
+        </div>
+      </div>
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Contact Resistance (Saat ON)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <input type="number" id="relayContactR" step="0.01" value="0.1" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main);">
+            <span style="font-weight: bold; font-size: 14px; color: var(--primary);">Ohm</span>
+        </div>
+      </div>
+    </div>
+    <div id="opampInputGroup" style="display: none; flex-direction: column; gap: 10px; margin-top: 15px;">
+      <div><label style="font-size: 12px; color: var(--text-muted);">Positif Rail Voltage (V+)</label><input type="number" id="opampPosRail" step="0.1" value="15" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+      <div><label style="font-size: 12px; color: var(--text-muted);">Negatif Rail Voltage (V-)</label><input type="number" id="opampNegRail" step="0.1" value="-15" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+    </div>
+    <div id="vsineInputGroup" style="display: none; flex-direction: column; gap: 10px; margin-top: 15px;">
+      <div><label style="font-size: 12px; color: var(--text-muted);">Amplitudo / Tegangan Puncak (Vp)</label><input type="number" id="vsineAmp" step="0.1" value="12" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+      <div><label style="font-size: 12px; color: var(--text-muted);">Frekuensi (Hz)</label><input type="number" id="vsineFreq" step="0.1" min="0.1" max="60" value="1" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+      <div><label style="font-size: 12px; color: var(--text-muted);">DC Offset (Volt)</label><input type="number" id="vsineOffset" step="0.1" value="0" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+      <div><label style="font-size: 12px; color: var(--text-muted);">Time Delay / Tunda (Detik)</label><input type="number" id="vsineDelay" step="0.01" value="0" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);"></div>
+    </div>
+    <div id="clockInputGroup" style="display: none; flex-direction: column; gap: 12px; margin-top: 15px;">
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Frekuensi Detak (Kecepatan)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+          <input type="number" id="clockFreq" step="0.001" min="0.001" max="1000" value="2" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);">
+          <span style="font-weight: bold; font-size: 14px; color: var(--primary);">Hz</span>
+        </div>
+      </div>
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Periode (Waktu 1 Gelombang Penuh)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+          <input type="number" id="clockPeriod" step="0.001" min="0.001" value="0.5" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);">
+          <span style="font-weight: bold; font-size: 14px; color: var(--primary);">Detik</span>
+        </div>
+      </div>
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Status Awal (Initial State)</label>
+        <select id="clockInitial" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main); margin-top: 4px;">
+          <option value="0">0 (LOW / OFF)</option>
+          <option value="1">1 (HIGH / ON)</option>
+        </select>
+      </div>
+    </div>
+    <div id="ffInputGroup" style="display: none; flex-direction: column; gap: 12px; margin-top: 15px;">
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Status Awal (Power-On State)</label>
+        <select id="ffInitial" style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main); margin-top: 4px;">
+          <option value="0">0 (LOW / OFF)</option>
+          <option value="1">1 (HIGH / ON)</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Waktu Rambat (Propagation Delay)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+          <input type="number" id="ffDelay" step="0.01" min="0" max="10" value="0" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);">
+          <span style="font-weight: bold; font-size: 14px; color: var(--primary);">Detik</span>
+        </div>
+      </div>
+    </div>
+    <div id="transformerInputGroup" style="display: none; flex-direction: column; gap: 12px; margin-top: 15px;">
+      <!-- PENGATURAN TEGANGAN (VOLT) -->
+      <div style="background: var(--bg-body); padding: 10px; border-radius: 6px; border: 1px solid var(--border-color);">
+          <h4 style="margin: 0 0 10px 0; font-size: 12px; color: var(--primary);">Pengaturan Tegangan (Fisika Engine)</h4>
+          <div style="margin-bottom: 8px;">
+            <label style="font-size: 11px; color: var(--text-muted);">Tegangan Primer (Input AC)</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+              <input type="number" id="trafoPriV" step="1" min="1" max="1000" value="220" style="flex: 1; padding: 6px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);">
+              <span style="font-weight: bold; font-size: 12px; color: var(--primary); width: 30px;">Volt</span>
+            </div>
+          </div>
+          <div>
+            <label style="font-size: 11px; color: var(--text-muted);">Tegangan Sekunder (Output)</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+              <input type="number" id="trafoSecV" step="0.1" min="0.1" max="1000" value="24" style="flex: 1; padding: 6px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);">
+              <span style="font-weight: bold; font-size: 12px; color: var(--primary); width: 30px;">Volt</span>
+            </div>
+          </div>
+      </div>
+      <!-- PENGATURAN INDUKTANSI (HENRY) - OTOMATIS -->
+      <div style="background: #0f172a; padding: 10px; border-radius: 6px; border: 1px dashed #3b82f6;">
+          <h4 style="margin: 0 0 10px 0; font-size: 12px; color: #3b82f6;">Konversi Induktansi (Untuk SPICE/Proteus)</h4>
+          
+          <div style="margin-bottom: 8px;">
+            <label style="font-size: 11px; color: #94a3b8;">Induktansi Primer (Lp)</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+              <input type="number" id="trafoPriH" step="1" min="1" value="100" style="flex: 1; padding: 6px; border-radius: 4px; border: 1px solid #334155; background: var(--control-bg); color: #fff;">
+              <span style="font-weight: bold; font-size: 12px; color: #3b82f6; width: 30px;">H</span>
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 8px;">
+            <!-- ID label ini akan diubah JavaScript sesuai jenis trafo -->
+            <label id="labelTrafoSecH" style="font-size: 11px; color: #94a3b8;">Induktansi Sekunder (Ls)</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+              <input type="number" id="trafoSecH" step="0.001" min="0.001" value="1.19" style="flex: 1; padding: 6px; border-radius: 4px; border: 1px solid #334155; background: var(--control-bg); color: #fff;">
+              <span style="font-weight: bold; font-size: 12px; color: #3b82f6; width: 30px;">H</span>
+            </div>
+          </div>
+          
+          <!-- 🟢 KOTAK BARU KHUSUS TRAFO CT (Otomatis Menghitung Ls1 & Ls2) -->
+          <div id="trafoCTInductance" style="display: none; margin-top: 12px; padding-top: 10px; border-top: 1px solid #1e293b;">
+            <label style="font-size: 11px; color: #f59e0b; font-weight: bold;">Induktansi Per Sisi CT (Ls1 & Ls2)</label>
+            <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+              <!-- Input ini dibuat READONLY agar pengguna tahu ini dihitung otomatis -->
+              <input type="number" id="trafoHalfH" readonly style="flex: 1; padding: 6px; border-radius: 4px; border: 1px solid #78350f; background: rgba(245, 158, 11, 0.1); color: #fcd34d; cursor: not-allowed;">
+              <span style="font-weight: bold; font-size: 12px; color: #f59e0b; width: 30px;">H</span>
+            </div>
+            <span style="font-size: 10px; color: #cbd5e1; line-height: 1.4; display: block; margin-top: 6px;">
+                *Nilai di atas adalah hasil bagi 4 dari Total Induktansi akibat efek kopling magnetik gabungan. Siap dimasukkan ke <b>TRAN-2P3S</b>.
+            </span>
+          </div>
+      </div>
+      <div id="trafoCTInfo" style="display: none; margin-top: 12px; padding: 8px; background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6; border-radius: 4px;">
+              <span style="display: block; font-size: 11px; font-weight: bold; color: #60a5fa; margin-bottom: 4px;">ℹ️ Info Trafo CT di Proteus/LTspice:</span>
+              <span style="font-size: 10px; color: #cbd5e1; line-height: 1.4; display: block;">
+                  Nilai Ls di atas adalah <b>Total Induktansi</b>. Untuk komponen Trafo Center Tap di simulator SPICE (TRAN-2P3S), bagi nilai Ls menjadi dua dengan rumus:<br>
+                  <b style="color: #fff; background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 2px; margin-top: 4px; display: inline-block;">Ls1 = Ls &divide; 4</b> dan <b style="color: #fff; background: rgba(0,0,0,0.3); padding: 2px 4px; border-radius: 2px; display: inline-block;">Ls2 = Ls &divide; 4</b>
+              </span>
+          </div>
+      <!-- KOPLING -->
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Koefisien Kopling (k)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+          <input type="number" id="trafoCoupling" step="0.01" min="0.1" max="1" value="1" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);">
+          <span style="font-weight: bold; font-size: 12px; color: var(--text-muted);">Max: 1.0</span>
+        </div>
+      </div>
+    </div>
+    <div id="sliderInputGroup" style="display:none;">
+      <p style="font-size: 13px; color: var(--text-muted); margin-bottom:6px;"> Nilai: <strong id="sliderValueDisplay">50</strong><span id="sliderUnit"> %</span></p>
+      <input type="range" id="compSlider" min="0" max="100" step="1" value="50" style="width:100%;" oninput="document.getElementById('sliderValueDisplay').innerText = this.value;">
+    </div>
+    <div id="potentiometerSettingGroup" style="display: none; flex-direction: column; gap: 10px; margin-top: 15px;">
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Langkah Tombol Animasi (Step %)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+          <input type="number" id="potStepValue" min="1" max="50" step="1" value="5" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #334155; background: var(--bg-main); color: var(--text-main);">
+          <span style="font-weight: bold; font-size: 14px; color: var(--primary);">%</span>
+        </div>
+        <span style="font-size: 10px; color: var(--text-muted); display: block; margin-top: 4px;">*Menentukan besarnya lompatan persentase saat tombol [+] atau [-] diklik pada kanvas.</span>
+      </div>
+    </div>
+    <p id="valCurrentWrapper" style="font-size: 12px; color: var(--text-muted);">Nilai saat ini: <strong id="valCurrent"></strong></p>
+    <div id="fusePresets" style="display:none;">
+      <h3>Kapasitas Sekering (A):</h3>
+      <div class="preset-buttons">
+        <button class="preset-btn" onclick="setPresetValue(5, 1)">5 A</button><button class="preset-btn" onclick="setPresetValue(7.5, 1)">7.5 A</button><button class="preset-btn" onclick="setPresetValue(10, 1)">10 A</button><button class="preset-btn" onclick="setPresetValue(15, 1)">15 A</button><button class="preset-btn" onclick="setPresetValue(20, 1)">20 A</button><button class="preset-btn" onclick="setPresetValue(30, 1)">30 A</button>
+      </div>
+    </div>
+    <div id="batteryPresets" style="display:none;">
+      <h3>Tegangan Umum (V):</h3>
+      <div class="preset-buttons">
+        <button class="preset-btn" onclick="setPresetValue(1.5, 1)">1.5 V</button><button class="preset-btn" onclick="setPresetValue(3, 1)">3 V</button><button class="preset-btn" onclick="setPresetValue(5, 1)">5 V</button><button class="preset-btn" onclick="setPresetValue(9, 1)">9 V</button><button class="preset-btn" onclick="setPresetValue(12, 1)">12 V</button><button class="preset-btn" onclick="setPresetValue(24, 1)">24 V</button>
+      </div>
+    </div>
+    <!-- KELOMPOK INPUT MANUAL ZENER -->
+    <div id="zenerInputGroup" style="display: none; flex-direction: column; gap: 12px; margin-top: 15px;">
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Tegangan Tembus Zener (Vz)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <input type="number" id="zenerVz" step="0.1" value="5.1" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main);">
+            <span style="font-weight: bold; font-size: 14px; color: var(--primary);">Volt</span>
+        </div>
+      </div>
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Test Current Datasheet (Izt)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <input type="number" id="zenerIzt" step="0.1" value="5" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main);">
+            <span style="font-weight: bold; font-size: 14px; color: var(--primary);">mA</span>
+        </div>
+      </div>
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Zener Impedance / Hambatan (Zzt)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <input type="number" id="zenerRz" step="0.1" placeholder="Auto" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main);">
+            <span style="font-weight: bold; font-size: 14px; color: var(--primary);">Ohm</span>
+        </div>
+        <span style="font-size: 10px; color: var(--text-muted); line-height: 1.4; display: block; margin-top: 4px;">
+            *Biarkan kosong agar dihitung otomatis berdasarkan Vz.
+        </span>
+      </div>
+    </div>
+    <!-- KELOMPOK PRESET ZENER -->
+    <div id="zenerPresets" style="display:none; margin-top: 20px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+      <label style="font-size: 12px; font-weight: bold; color: var(--text-main); margin-bottom: 10px; display: block;">Pilih Model Pabrikan (Otomatis):</label>
+      <div class="preset-buttons" style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <!-- Parameter urutannya: (Vz, Izt, Zzt/Rz) -->
+        <button class="preset-btn" onclick="setPresetValue(5.1, 49, 7)">1N4733A (5.1V)</button>
+        <button class="preset-btn" onclick="setPresetValue(15, 5, 15)">BZX84-C15 (15V)</button>
+        <button class="preset-btn" onclick="setPresetValue(18, 65, 2.5)">1N5355B (18V)</button>
+        <button class="preset-btn" onclick="setPresetValue(24, 5, 33)">BZX384-B24 (24V)</button>
+        <button class="preset-btn" onclick="setPresetValue(30, 5, 80)">BZX384-B30 (30V)</button>
+      </div>
+    </div>
+    <!-- KELOMPOK INPUT ARDUINO KODE -->
+<div id="arduinoInputGroup" style="display: none; flex-direction: column; gap: 12px; margin-top: 15px;">
+    <div>
+        <label style="font-size: 12px; color: var(--text-muted); font-weight: bold;">Editor Kode Pseudo-Arduino (JavaScript):</label>
+        <div style="margin-top: 6px;">
+            <textarea id="arduinoCodeEditor" rows="12" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: #0f172a; color: #38bdf8; font-family: monospace; font-size: 12px; resize: vertical;" spellcheck="false" placeholder="function setup() {\n\n}\n\nfunction loop() {\n\n}"></textarea>
+        </div>
+        <span style="font-size: 10px; color: var(--text-muted); line-height: 1.4; display: block; margin-top: 6px;">
+            *Gunakan fungsi standar: pinMode(pin, mode), digitalWrite(pin, val), digitalRead(pin), analogRead(pin), dan millis().<br>
+            *Jangan gunakan delay()! Gunakan logika millis() agar browser tidak lag.
+        </span>
+    </div>
+</div>
+    <!-- KELOMPOK INPUT DIODA BRIDGE -->
+    <div id="diodeBridgeInputGroup" style="display: none; flex-direction: column; gap: 12px; margin-top: 15px;">
+      <div>
+        <label style="font-size: 12px; color: var(--text-muted);">Batas Tegangan Mundur (PIV / PRV)</label>
+        <div style="display: flex; gap: 10px; align-items: center; margin-top: 4px;">
+            <input type="number" id="bridgePIV" step="1" value="100" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-main);">
+            <span style="font-weight: bold; font-size: 14px; color: var(--primary);">Volt</span>
+        </div>
+        <span style="font-size: 10px; color: var(--text-muted); line-height: 1.4; display: block; margin-top: 6px;">
+            *Jika tegangan terbalik melebihi batas ini, dioda bridge akan mengalami kebocoran.
+        </span>
+      </div>
+    </div>
+    <!-- KELOMPOK PRESET DIODA BRIDGE -->
+    <div id="bridgePresets" style="display:none; margin-top: 20px; padding-top: 15px; border-top: 1px dashed var(--border-color);">
+      <label style="font-size: 12px; font-weight: bold; color: var(--text-main); margin-bottom: 10px; display: block;">Seri Pabrikan (Otomatis):</label>
+      <div class="preset-buttons" style="display: flex; flex-wrap: wrap; gap: 8px;">
+        <!-- Penyearah Daya (Power Rectifier) Standar 1.5 Ampere -->
+        <button class="preset-btn" onclick="setPresetValue(100, 'bridge')">W01M (100V)</button>
+        <button class="preset-btn" onclick="setPresetValue(400, 'bridge')">W04M (400V)</button>
+        <button class="preset-btn" onclick="setPresetValue(1000, 'bridge')">W10M (1000V)</button>
+      </div>
+    </div>
+    <div id="resistorPresets" style="display:none;">
+      <h3>Hambatan Umum:</h3>
+      <div class="preset-buttons">
+        <button class="preset-btn" onclick="setPresetValue(10, 1)">10 Ω</button><button class="preset-btn" onclick="setPresetValue(100, 1)">100 Ω</button><button class="preset-btn" onclick="setPresetValue(330, 1)">330 Ω</button><button class="preset-btn" onclick="setPresetValue(1, 1000)">1 kΩ</button><button class="preset-btn" onclick="setPresetValue(10, 1000)">10 kΩ</button>
+      </div>
+    </div>
+    <div id="capacitorPresets" style="display:none;">
+      <h3>Kapasitansi Umum (µF):</h3>
+      <div class="preset-buttons">
+        <button class="preset-btn" onclick="setPresetValue(0.1, 1)">100 nF</button><button class="preset-btn" onclick="setPresetValue(1, 1)">1 µF</button><button class="preset-btn" onclick="setPresetValue(10, 1)">10 µF</button><button class="preset-btn" onclick="setPresetValue(100, 1)">100 µF</button><button class="preset-btn" onclick="setPresetValue(1000, 1)">1000 µF</button>
+      </div>
+    </div>
+    <br>
+    <button class="btn btn-primary" onclick="saveComponentValue()" style="width:100%; justify-content:center;">Simpan</button>
+    <button class="btn btn-secondary" onclick="closeValueModal()" style="width:100%; margin-top:8px; justify-content:center; background:var(--control-bg); color:var(--text-main);">Batal</button>
+  </div>
+</div>
+
+<div class="modal" id="truthModal">
+  <div class="modal-content" style="max-width: 600px;">
+    <h2><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg> Tabel Kebenaran</h2>
+    <div style="overflow-x: auto;">
+      <table class="truth-table" id="modal-truth-table"><thead></thead><tbody></tbody></table>
+    </div>
+    <br>
+    <button class="btn btn-primary" onclick="closeTruthTable()" style="width:100%; justify-content:center;">Tutup</button>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+<!-- WADAH GLOBAL TOOLTIP -->
+<div id="globalTooltip" class="global-tooltip"></div>
+<div class="modal" id="exitModal">
+  <div class="modal-content" style="max-width: 350px; text-align: center;">
+    <h2 style="justify-content: center; color: var(--danger);">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-right: 8px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Keluar Aplikasi
+    </h2>
+    <p id="exitMessage" style="margin: 15px 0; font-size: 14px; color: var(--text-main);">Apakah Anda yakin ingin keluar?</p>
+    <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 20px;">
+      <button class="btn btn-success" id="exitSaveBtn" onclick="exportCircuit(); closeExitModal();" style="width:100%; justify-content:center;">💾 Simpan Rangkaian</button>
+      <button class="btn btn-danger" onclick="confirmExit()" style="width:100%; justify-content:center;">Keluar</button>
+      <button class="btn btn-secondary" onclick="closeExitModal()" style="width:100%; justify-content:center; background:var(--control-bg); color:var(--text-main);">Batal</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- Panggil main.js sebagai modul utama -->
+<script type="module" src="/src/main.js"></script>
+
+</script>
+</body>
+</html>
