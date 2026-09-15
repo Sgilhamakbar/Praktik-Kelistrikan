@@ -205,10 +205,31 @@ body {
   background: var(--panel-bg);
   background-image: linear-gradient(var(--canvas-grid) 1px, transparent 1px), linear-gradient(90deg, var(--canvas-grid) 1px, transparent 1px);
   background-size: 20px 20px;
-  position: relative; cursor: crosshair;
+  position: relative; 
+  cursor: grab; /* 1. Default: Tangan Terbuka siap menggeser layar */
   transform-origin: 0 0; transform: scale(1);
   transition: background-color 0.3s ease;
   touch-action: auto;
+}
+
+/* 2. Kursor saat layar sedang digeser (Pan) */
+#canvas.is-panning {
+  cursor: grabbing !important; /* Tangan Mengepal */
+}
+
+/* 3. Kursor (Solder/Plus) HANYA muncul saat mode merakit kabel aktif */
+body.is-routing-wire #canvas {
+  cursor: crosshair !important; 
+}
+
+/* 4. Kursor tangan untuk komponen */
+.circuit-component {
+  cursor: grab !important;
+}
+
+/* 5. Tangan mengepal saat komponen sedang ditahan/digeser */
+.circuit-component:active {
+  cursor: grabbing !important;
 }
 
 /* Class untuk mematikan grid secara instan */
@@ -486,4 +507,104 @@ body.is-routing-wire .circuit-component .rotate-btn { display: none !important; 
 @keyframes flowAnim {
   from { stroke-dashoffset: 16; } /* Harus kelipatan dari total dasharray (8+8=16) */
   to { stroke-dashoffset: 0; }
+}
+
+/* =========================================================
+   FLOATING WINDOW (SERIAL MONITOR)
+   ========================================================= */
+.floating-window {
+  display: none; 
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 400px;
+  max-width: 90vw; /* 🌟 Tambahan: Agar tidak luber di layar HP */
+  max-height: 80vh; /* 🌟 Tambahan: Agar tidak kepanjangan */
+  background: #0f172a;
+  border: 1px solid #334155;
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  z-index: 9000;
+  flex-direction: column;
+  overflow: hidden;
+  resize: both;
+}
+
+/* Akan muncul saat UIManager memanggil class .show */
+.floating-window.show {
+  display: flex;
+}
+
+.floating-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: #1e293b;
+  border-bottom: 1px solid #334155;
+  cursor: grab; /* Mengubah kursor jadi ikon tangan */
+  user-select: none;
+}
+
+.floating-header:active {
+  cursor: grabbing; /* Tangan mengepal saat ditahan */
+}
+
+.floating-body {
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* =========================================================
+   MENGUBAH VALUE MODAL MENJADI PROPERTY PANEL KANAN
+   ========================================================= */
+
+/* 1. Hapus latar gelap dan pindahkan posisi ke kanan */
+#valueModal {
+  background: transparent !important; 
+  backdrop-filter: none !important;
+  justify-content: flex-end; 
+  align-items: stretch; 
+  /* 🌟 KUNCI UTAMA: Biarkan klik tembus ke kanvas di sebelahnya! */
+  pointer-events: none; 
+}
+
+/* 2. Modifikasi kotak putihnya menjadi panel tinggi penuh */
+#valueModal .modal-content {
+  /* Area panelnya sendiri tetap bisa diklik */
+  pointer-events: auto; 
+  margin: 0;
+  width: 340px; 
+  max-width: 85vw; /* Responsif untuk layar HP */
+  height: 100vh; 
+  max-height: 100vh;
+  border-radius: 0; /* Hapus sudut melengkung bawaan modal */
+  border-top: none;
+  border-bottom: none;
+  border-right: none;
+  border-left: 1px solid var(--border-color);
+  box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 3. Animasi meluncur mulus dari kanan layar */
+#valueModal.show .modal-content {
+  animation: slideInRight 0.35s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+/* 4. Perapian Tata Letak (Dorong tombol ke bawah) */
+#valueModal .modal-content > br {
+  display: none; /* Buang jarak kosong bawaan HTML */
+}
+
+#valueModal .btn-primary {
+  /* Mendorong tombol Simpan & Batal agar selalu berada rapi di dasar layar */
+  margin-top: auto !important; 
 }
