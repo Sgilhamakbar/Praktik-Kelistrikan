@@ -178,6 +178,11 @@ export const rotateComponent = (id, angle = 90) => {
       txt.style.transform = `scaleX(${sx}) scaleY(${sy}) rotate(-${compData.rotation}deg)`; 
   });
 
+  // 🌟 Reset kabel agar menyesuaikan posisi pin baru
+  CircuitStore.connections.forEach(conn => {
+      if(conn.source.compId === id || conn.target.compId === id) conn.waypoints = [];
+  });
+
   drawConnections();
 
   const newData = JSON.parse(JSON.stringify({ ...compData, element: undefined }));
@@ -225,6 +230,12 @@ export function mirrorSelected(axis) {
     });
     
     if (hasChanges) {
+      // 🌟 Reset kabel agar menyesuaikan pencerminan
+        CircuitStore.connections.forEach(conn => {
+            if (affectedIds.includes(conn.source.compId) || affectedIds.includes(conn.target.compId)) {
+                conn.waypoints = [];
+            }
+        });
         if (typeof drawConnections !== 'undefined') drawConnections();
         if (typeof updateConnectionPointVisuals !== 'undefined') updateConnectionPointVisuals();
         
@@ -465,10 +476,6 @@ export function startDragComponent(e, compId) {
 }
 
 export function startTouchDragComponent(e, compId) {
-  // 🌟 TAMBAHAN KUNCI: Matikan sifat asli browser (native scroll layar) sejak awal komponen disentuh
-  if (e.cancelable) e.preventDefault();
-  e.stopPropagation();
-
   if (!CircuitStore.selectedComponents.includes(compId)) selectComponent(compId);
   const t0 = e.touches[0];
   const startX = t0.clientX, startY = t0.clientY;
