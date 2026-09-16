@@ -1475,16 +1475,21 @@
   </div>
 
   <!-- Layar Teks & Tombol (Isi Elastis) -->
-  <div class="floating-body" style="flex: 1; display: flex; flex-direction: column; min-height: 0;">
-    <!-- flex: 1 menggantikan height statis agar melar mengikuti jendela -->
-    <div id="serialMonitorOutput" style="flex: 1; overflow-y: auto; background: #000000; color: #10b981; font-family: monospace; font-size: 12px; padding: 10px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word;">
+  <div class="floating-body" style="flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative;">
+    
+    <div id="serialMonitorOutput" style="flex: 1; overflow-y: auto; background: #000000; color: #10b981; font-family: monospace; font-size: 12px; padding: 10px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; margin-bottom: 5px;">
       <span style="color: #64748b;">> Menunggu koneksi Serial...</span><br>
     </div>
     
-    <!-- flex-shrink: 0 agar barisan tombol bawah tidak ikut gepeng -->
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; flex-shrink: 0;">
+    <!-- Area Tombol -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px; flex-shrink: 0; padding-right: 25px;">
       <span style="font-size: 11px; color: #64748b;">Baud rate: 9600 (Simulated)</span>
       <button class="btn btn-secondary" onclick="UIManager.clearSerialMonitor()" style="padding: 4px 10px; font-size: 12px; background: #334155; color: white;">Bersihkan Layar</button>
+    </div>
+
+    <!-- ICON RESIZE HANDLE UNTUK HP (1 JARI) -->
+    <div id="smResizeHandle" style="position: absolute; bottom: -2px; right: -2px; width: 35px; height: 35px; cursor: nwse-resize; display: flex; justify-content: flex-end; align-items: flex-end; padding: 6px; z-index: 20; background: transparent;">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#94a3b8" stroke-width="2"><polyline points="15 21 21 21 21 15"></polyline><line x1="10" y1="21" x2="21" y2="10"></line></svg>
     </div>
   </div>
 </div>
@@ -1625,27 +1630,6 @@
 <!-- Panggil main.js sebagai modul utama -->
 <script type="module" src="/src/main.js"></script>
 
-  <script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').then(registration => {
-        console.log('PWA Service Worker berhasil didaftarkan!');
-        registration.addEventListener('updatefound', () => {
-          const newWorker = registration.installing;
-          newWorker.addEventListener('statechange', () => {
-            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              if (typeof UIManager !== 'undefined') {
-                 UIManager.showToast('🚀 Pembaruan Aplikasi Tersedia! Memuat ulang...', 3000);
-              }
-              setTimeout(() => window.location.reload(), 3000);
-            }
-          });
-        });
-      }).catch(error => {
-        console.log('PWA Service Worker gagal didaftarkan:', error);
-      });
-    });
-  }
 </script>
 </body>
 </html>
