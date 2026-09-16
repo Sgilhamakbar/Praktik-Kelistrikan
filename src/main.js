@@ -456,59 +456,105 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ========================================================
-        // FITUR PINCH-TO-RESIZE (CUBIT 2 JARI UNTUK HP)
+        // FITUR RESIZE JENDELA (CUBIT 2 JARI & TARIK POJOK 1 JARI)
         // ========================================================
-        let initialPinchDist = null;
+        const resizeHandle = document.getElementById('smResizeHandle');
+        let isResizing = false;
         let initialWinWidth = 0;
         let initialWinHeight = 0;
+        
+        // --- METODE 1: Tarik Pojok Pakai 1 Jari (Sangat Lancar di HP) ---
+        if (resizeHandle) {
+            let startTouchX = 0, startTouchY = 0;
 
+            // Untuk Sentuhan Layar HP
+            resizeHandle.addEventListener('touchstart', (e) => {
+                isResizing = true;
+                e.preventDefault();
+                e.stopPropagation(); // Cegah event bocor
+                const rect = floatWin.getBoundingClientRect();
+                initialWinWidth = rect.width;
+                initialWinHeight = rect.height;
+                startTouchX = e.touches[0].clientX;
+                startTouchY = e.touches[0].clientY;
+            }, { passive: false });
+
+            document.addEventListener('touchmove', (e) => {
+                if (!isResizing) return;
+                e.preventDefault();
+                
+                let newWidth = initialWinWidth + (e.touches[0].clientX - startTouchX);
+                let newHeight = initialWinHeight + (e.touches[0].clientY - startTouchY);
+                
+                // Batasi agar tidak melampaui layar HP
+                newWidth = Math.max(250, Math.min(newWidth, window.innerWidth * 0.95));
+                newHeight = Math.max(150, Math.min(newHeight, window.innerHeight * 0.9));
+                
+                floatWin.style.width = newWidth + 'px';
+                floatWin.style.height = newHeight + 'px';
+            }, { passive: false });
+
+            document.addEventListener('touchend', () => { isResizing = false; });
+            
+            // Untuk Mouse PC (sebagai pengaman tambahan)
+            resizeHandle.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                e.preventDefault(); e.stopPropagation();
+                const rect = floatWin.getBoundingClientRect();
+                initialWinWidth = rect.width;
+                initialWinHeight = rect.height;
+                startTouchX = e.clientX;
+                startTouchY = e.clientY;
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing || e.touches) return;
+                let newWidth = initialWinWidth + (e.clientX - startTouchX);
+                let newHeight = initialWinHeight + (e.clientY - startTouchY);
+                floatWin.style.width = Math.max(250, newWidth) + 'px';
+                floatWin.style.height = Math.max(150, newHeight) + 'px';
+            });
+
+            document.addEventListener('mouseup', () => { isResizing = false; });
+        }
+
+        // --- METODE 2: Cubit 2 Jari (Pinch to Zoom) ---
+        let initialPinchDist = null;
         floatWin.addEventListener('touchstart', (e) => {
             if (e.touches.length === 2) {
-                // Matikan mode geser jika 2 jari menyentuh layar
                 isDraggingWin = false; 
+                e.stopPropagation(); // 🌟 KUNCI: Cegah Canvas mencuri event cubitan!
                 
-                // Hitung jarak awal antara 2 jari (Hipotenusa)
                 const dx = e.touches[0].clientX - e.touches[1].clientX;
                 const dy = e.touches[0].clientY - e.touches[1].clientY;
                 initialPinchDist = Math.hypot(dx, dy);
                 
-                // Catat ukuran jendela saat ini
                 const rect = floatWin.getBoundingClientRect();
                 initialWinWidth = rect.width;
                 initialWinHeight = rect.height;
             }
-        }, { passive: true });
+        }, { passive: false });
 
         floatWin.addEventListener('touchmove', (e) => {
             if (e.touches.length === 2 && initialPinchDist) {
-                e.preventDefault(); // Cegah layar web ikut ter-zoom
+                e.preventDefault(); 
+                e.stopPropagation(); // 🌟 KUNCI: Cegah Canvas men-zoom layar!
                 
-                // Hitung jarak baru antara 2 jari
                 const dx = e.touches[0].clientX - e.touches[1].clientX;
                 const dy = e.touches[0].clientY - e.touches[1].clientY;
                 const currentDist = Math.hypot(dx, dy);
-                
-                // Dapatkan rasio perkalian pembesaran/pengecilan
                 const scale = currentDist / initialPinchDist;
                 
-                let newWidth = initialWinWidth * scale;
-                let newHeight = initialWinHeight * scale;
+                let newWidth = Math.max(250, Math.min(initialWinWidth * scale, window.innerWidth * 0.95));
+                let newHeight = Math.max(150, Math.min(initialWinHeight * scale, window.innerHeight * 0.9));
                 
-                // Batasan Ukuran (Jangan terlalu kecil atau lebih besar dari layar)
-                newWidth = Math.max(250, Math.min(newWidth, window.innerWidth * 0.95));
-                newHeight = Math.max(150, Math.min(newHeight, window.innerHeight * 0.9));
-                
-                // Terapkan ukuran baru ke jendela
                 floatWin.style.width = newWidth + 'px';
                 floatWin.style.height = newHeight + 'px';
             }
-        }, { passive: false }); // Wajib false agar e.preventDefault() berfungsi
+        }, { passive: false });
 
         floatWin.addEventListener('touchend', (e) => {
-            // Reset jika jari diangkat
-            if (e.touches.length < 2) {
-                initialPinchDist = null;
-            }
+            if (e.touches.length < 2) initialPinchDist = null;
         });
         
 // =========================================================
