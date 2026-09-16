@@ -194,6 +194,9 @@ body {
   overscroll-behavior: none;
   scrollbar-width: none; /* Menyembunyikan di Firefox */
   -ms-overflow-style: none; /* Menyembunyikan di IE/Edge Lama */
+  
+  /* 🌟 TAMBAHAN KUNCI: Mencegah layar tertarik otomatis oleh kabel SVG */
+  overflow-anchor: none; 
 }
 
 #canvas-wrapper::-webkit-scrollbar {
@@ -209,7 +212,7 @@ body {
   cursor: grab; /* 1. Default: Tangan Terbuka siap menggeser layar */
   transform-origin: 0 0; transform: scale(1);
   transition: background-color 0.3s ease;
-  touch-action: none;
+  touch-action: auto;
 }
 
 /* 2. Kursor saat layar sedang digeser (Pan) */
