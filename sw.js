@@ -1,16 +1,25 @@
-const CACHE_NAME = 'lab-listrik-v3.6;
+const CACHE_NAME = 'lab-listrik-v3.7;
 
 // Daftar semua file yang menyusun aplikasi Anda
 const urlsToCache = [
   './',
   './index.html',
   './style.css',
-  './main.js',
+  './src/main.js',
   './src/components/ComponentDefs.js',
-  './src/HistoryManager.js',
+  './src/HistoryManager.js';
   './src/state/CircuitStore.js',
   './src/engine/SimulationEngine.js',
-  './src/UI/UIManager.js'
+  './src/engine/AudioManager.js',
+  './src/managers/ClipboardManager.js';
+  './src/state/CircuitStore.js';
+  './src/UI/UIManager.js',
+  './src/UI/ContextMenu.js';
+  './src/UI/SimulationController.js';
+  './src/canvas/CanvasInteractions.js',
+  './src/canvas/ComponentBuilder.js',
+  './src/canvas/CanvasNavigation.js',
+  './src/canvas/WireManager.js'
 ];
 
 // 1. INSTALASI: Menyimpan file ke memori (Cache)
