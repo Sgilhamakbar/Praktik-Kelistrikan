@@ -465,6 +465,10 @@ export function startDragComponent(e, compId) {
 }
 
 export function startTouchDragComponent(e, compId) {
+  // 🌟 TAMBAHAN KUNCI: Matikan sifat asli browser (native scroll layar) sejak awal komponen disentuh
+  if (e.cancelable) e.preventDefault();
+  e.stopPropagation();
+
   if (!CircuitStore.selectedComponents.includes(compId)) selectComponent(compId);
   const t0 = e.touches[0];
   const startX = t0.clientX, startY = t0.clientY;
