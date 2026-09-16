@@ -794,31 +794,55 @@ export function drawConnections() {
         }
 
         let group = svg.querySelector(`g[data-wire-id="${conn.id}"]`);
-        let basePath, flowPath;
+        let basePath, flowPath, hitboxPath; // 🌟 Tambahkan hitboxPath
         
         if (!group) {
             group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             group.setAttribute('data-wire-id', conn.id);
 
+            // 1. GARIS VISUAL (Hanya untuk dilihat, tipis)
             basePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             basePath.setAttribute('fill', 'none');
             basePath.classList.add('wire-base');
-            basePath.style.pointerEvents = 'stroke'; 
-            basePath.style.cursor = 'pointer';
+            basePath.style.pointerEvents = 'none'; // Matikan interaksi sentuh di sini!
 
+            // 2. GARIS ANIMASI ARUS
             flowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             flowPath.setAttribute('fill', 'none');
             flowPath.classList.add('wire-flow');
+            flowPath.style.pointerEvents = 'none'; // Matikan interaksi
+
+            // 🌟 3. GARIS HITBOX GAIB (Area Sentuh Super Lebar: 30px)
+            hitboxPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            hitboxPath.classList.add('wire-hitbox');
+            // cssText menimpa aturan CSS agar 100% gaib tapi tetap bisa diklik
+            hitboxPath.style.cssText = 'fill: none !important; stroke: transparent !important; stroke-width: 30px !important; pointer-events: stroke !important; cursor: pointer !important;';
 
             group.appendChild(basePath);
             group.appendChild(flowPath);
+            group.appendChild(hitboxPath); // Hitbox harus di-append paling akhir agar berada di atas
             svg.appendChild(group);
 
+            // --- EFEK HOVER MANUAL (Karena hitbox menutupi garis asli) ---
+            hitboxPath.addEventListener('mouseenter', () => {
+                basePath.style.stroke = 'var(--danger)';
+                basePath.style.strokeWidth = '4.5px';
+                basePath.style.filter = 'drop-shadow(0 0 4px rgba(225,29,72,0.5))';
+            });
+            hitboxPath.addEventListener('mouseleave', () => {
+                basePath.style.stroke = '';
+                basePath.style.strokeWidth = '';
+                basePath.style.filter = '';
+                updateWireStates(); // Kembalikan ke warna asli/tegangan
+            });
+
+            // --- SEMUA INTERAKSI KINI DIAMBIL ALIH OLEH HITBOX ---
             const handleWireInteract = (e) => { 
                 e.stopPropagation(); e.preventDefault(); 
                 
-                const sId = +basePath.dataset.sId; const sIdx = +basePath.dataset.sIdx; const sType = basePath.dataset.sType;
-                const tId = +basePath.dataset.tId; const tIdx = +basePath.dataset.tIdx; const tType = basePath.dataset.tType;
+                // Ambil data dari dataset HITBOX
+                const sId = +hitboxPath.dataset.sId; const sIdx = +hitboxPath.dataset.sIdx; const sType = hitboxPath.dataset.sType;
+                const tId = +hitboxPath.dataset.tId; const tIdx = +hitboxPath.dataset.tIdx; const tType = hitboxPath.dataset.tType;
 
                 if (CircuitStore.connectionStart) {
                     const canvas = document.getElementById('canvas');
@@ -910,9 +934,9 @@ export function drawConnections() {
                 }
             };
             
-            basePath.addEventListener('click', handleWireInteract); 
-            basePath.addEventListener('touchstart', handleWireInteract, {passive: false});
-
+            // Pasang fungsi hapus/splice ke HITBOX
+            hitboxPath.addEventListener('click', handleWireInteract); 
+            
             const handleSplit = (e) => {
                 e.stopPropagation(); e.preventDefault();
                 const ct = document.querySelector('.confirm-toast'); 
@@ -924,21 +948,16 @@ export function drawConnections() {
                 const clientY = e.touches ? e.touches[0].clientY : e.clientY;
                 const x = (clientX - cr.left) / UIManager.currentZoom;
                 const y = (clientY - cr.top) / UIManager.currentZoom;
-                
                 window.splitWireToNode(conn.id, x - 30, y - 30); 
             };
+            hitboxPath.addEventListener('dblclick', handleSplit);
 
-            basePath.addEventListener('dblclick', handleSplit);
-
-            // 🎨 3. MUNCULKAN PALET WARNA (PC: Klik Kanan, HP: Tahan Jari)
-            
-            // Fungsi pembantu agar kode tidak berulang
+            // 🎨 MUNCULKAN PALET WARNA (PC & HP)
             const showColorPalette = (clientX, clientY) => {
                 window.activeWireForColor = conn.id; 
                 const palette = document.getElementById('wireColorPalette');
                 if (palette) {
                     palette.style.display = 'flex';
-                    // Hitung batas agar menu tidak luber keluar pinggir layar
                     const maxX = window.innerWidth - palette.offsetWidth - 20;
                     const maxY = window.innerHeight - palette.offsetHeight - 20;
                     palette.style.left = Math.min(clientX, Math.max(0, maxX)) + 'px';
@@ -946,47 +965,31 @@ export function drawConnections() {
                 }
             };
 
-            // EVENT KLIK KANAN (Mouse PC/Laptop)
-            basePath.addEventListener('contextmenu', (e) => {
-                e.preventDefault(); // Cegah menu bawaan browser muncul
-                e.stopPropagation();
+            // Klik Kanan PC
+            hitboxPath.addEventListener('contextmenu', (e) => {
+                e.preventDefault(); e.stopPropagation();
                 showColorPalette(e.clientX, e.clientY);
             });
 
-            // ==========================================
-            // EVENT LONG PRESS (Layar Sentuh HP/Tablet)
-            // ==========================================
+            // Long Press HP
             let longPressTimer;
             let isLongPress = false;
 
-            basePath.addEventListener('touchstart', (e) => {
+            hitboxPath.addEventListener('touchstart', (e) => {
                 isLongPress = false;
-                // Mulai penghitung waktu saat jari menempel
                 longPressTimer = setTimeout(() => {
                     isLongPress = true;
                     showColorPalette(e.touches[0].clientX, e.touches[0].clientY);
-                }, 500); // 500ms = Tahan setengah detik
+                }, 500); 
             }, {passive: false});
 
-            basePath.addEventListener('touchmove', (e) => {
-                // Jika jari malah bergeser (scrolling layar), batalkan timer palet
-                clearTimeout(longPressTimer);
-            }, {passive: true});
+            hitboxPath.addEventListener('touchmove', () => clearTimeout(longPressTimer), {passive: true});
 
-            // Modifikasi Event Tap (Gabungan Tap biasa, Double Tap, & Long Press)
             let lastWireTap = 0;
-            basePath.addEventListener('touchend', (e) => {
-                // Selalu bersihkan timer saat jari diangkat
+            hitboxPath.addEventListener('touchend', (e) => {
                 clearTimeout(longPressTimer); 
-                
-                // JIKA tadi memicu Long Press (palet muncul), JANGAN jalankan aksi potong kabel!
-                if (isLongPress) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    return; 
-                }
+                if (isLongPress) { e.preventDefault(); e.stopPropagation(); return; }
 
-                // Logika Bawaan: Tap biasa (Hapus) & Double Tap (Split Node)
                 const currentTime = new Date().getTime();
                 const tapLength = currentTime - lastWireTap;
                 if (tapLength < 300 && tapLength > 0) {
@@ -996,19 +999,25 @@ export function drawConnections() {
                 }
                 lastWireTap = currentTime;
             }, {passive: false});
+
         } else {
             basePath = group.querySelector('.wire-base');
             flowPath = group.querySelector('.wire-flow');
+            hitboxPath = group.querySelector('.wire-hitbox');
         }
 
+        // UPDATE SHAPE PATH UNTUK KETIGA GARIS
         basePath.setAttribute('d', pathStr);
         flowPath.setAttribute('d', pathStr);
-        basePath.dataset.sId = conn.source.compId; 
-        basePath.dataset.sIdx = conn.source.pinIndex;
-        basePath.dataset.sType = sType;           
-        basePath.dataset.tId = conn.target.compId; 
-        basePath.dataset.tIdx = conn.target.pinIndex;
-        basePath.dataset.tType = tType;           
+        hitboxPath.setAttribute('d', pathStr); // Hitbox wajib ikut melengkung sesuai kabel asli
+
+        // DATASET DISIMPAN DI HITBOX, BUKAN BASEPATH
+        hitboxPath.dataset.sId = conn.source.compId; 
+        hitboxPath.dataset.sIdx = conn.source.pinIndex;
+        hitboxPath.dataset.sType = sType;           
+        hitboxPath.dataset.tId = conn.target.compId; 
+        hitboxPath.dataset.tIdx = conn.target.pinIndex;
+        hitboxPath.dataset.tType = tType;
     });
 
     // Cleanup kabel hantu
