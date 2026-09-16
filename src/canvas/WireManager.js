@@ -930,27 +930,63 @@ export function drawConnections() {
 
             basePath.addEventListener('dblclick', handleSplit);
 
-            // 🌟 3. MUNCULKAN PALET WARNA SAAT KABEL DI-KLIK KANAN (Atau Long Press di HP)
-            basePath.addEventListener('contextmenu', (e) => {
-                e.preventDefault(); // Cegah menu bawaan browser muncul
-                e.stopPropagation();
-                
-                // Simpan ID kabel ini ke variabel global sementara
+            // 🎨 3. MUNCULKAN PALET WARNA (PC: Klik Kanan, HP: Tahan Jari)
+            
+            // Fungsi pembantu agar kode tidak berulang
+            const showColorPalette = (clientX, clientY) => {
                 window.activeWireForColor = conn.id; 
-                
                 const palette = document.getElementById('wireColorPalette');
                 if (palette) {
                     palette.style.display = 'flex';
-                    // Posisikan palet persis di ujung mouse
-                    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-                    palette.style.left = clientX + 'px';
-                    palette.style.top = clientY + 'px';
+                    // Hitung batas agar menu tidak luber keluar pinggir layar
+                    const maxX = window.innerWidth - palette.offsetWidth - 20;
+                    const maxY = window.innerHeight - palette.offsetHeight - 20;
+                    palette.style.left = Math.min(clientX, Math.max(0, maxX)) + 'px';
+                    palette.style.top = Math.min(clientY, Math.max(0, maxY)) + 'px';
                 }
+            };
+
+            // EVENT KLIK KANAN (Mouse PC/Laptop)
+            basePath.addEventListener('contextmenu', (e) => {
+                e.preventDefault(); // Cegah menu bawaan browser muncul
+                e.stopPropagation();
+                showColorPalette(e.clientX, e.clientY);
             });
 
+            // ==========================================
+            // EVENT LONG PRESS (Layar Sentuh HP/Tablet)
+            // ==========================================
+            let longPressTimer;
+            let isLongPress = false;
+
+            basePath.addEventListener('touchstart', (e) => {
+                isLongPress = false;
+                // Mulai penghitung waktu saat jari menempel
+                longPressTimer = setTimeout(() => {
+                    isLongPress = true;
+                    showColorPalette(e.touches[0].clientX, e.touches[0].clientY);
+                }, 500); // 500ms = Tahan setengah detik
+            }, {passive: false});
+
+            basePath.addEventListener('touchmove', (e) => {
+                // Jika jari malah bergeser (scrolling layar), batalkan timer palet
+                clearTimeout(longPressTimer);
+            }, {passive: true});
+
+            // Modifikasi Event Tap (Gabungan Tap biasa, Double Tap, & Long Press)
             let lastWireTap = 0;
             basePath.addEventListener('touchend', (e) => {
+                // Selalu bersihkan timer saat jari diangkat
+                clearTimeout(longPressTimer); 
+                
+                // JIKA tadi memicu Long Press (palet muncul), JANGAN jalankan aksi potong kabel!
+                if (isLongPress) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return; 
+                }
+
+                // Logika Bawaan: Tap biasa (Hapus) & Double Tap (Split Node)
                 const currentTime = new Date().getTime();
                 const tapLength = currentTime - lastWireTap;
                 if (tapLength < 300 && tapLength > 0) {
