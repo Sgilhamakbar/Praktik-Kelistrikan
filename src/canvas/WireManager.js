@@ -753,44 +753,124 @@ export function drawConnections() {
             if (currentX !== tp.x && currentY !== tp.y) pathStr += `L ${tp.x} ${currentY} `;
             pathStr += `L ${tp.x} ${tp.y}`;
         } else {
-            const wS = ComponentDefs.getDimensions(compS.type)[0] || 60;
-            const wT = ComponentDefs.getDimensions(compT.type)[0] || 60;
+            // ALGORITMA BARU: Bulletproof 360-Degree Smart Router & Shortest Wrap-Around
+            const canvas = document.getElementById('canvas');
+            const cr = canvas.getBoundingClientRect();
             
-            let spDirX = 0;
-            if (sp.x < compS.x + wS/2 - 5) spDirX = -1;
-            else if (sp.x > compS.x + wS/2 + 5) spDirX = 1;
+            const elS = document.getElementById(`comp-${compS.id}`);
+            const elT = document.getElementById(`comp-${compT.id}`);
+            if (!elS || !elT) return;
 
-            let tpDirX = 0;
-            if (tp.x < compT.x + wT/2 - 5) tpDirX = -1;
-            else if (tp.x > compT.x + wT/2 + 5) tpDirX = 1;
+            const rectS = elS.getBoundingClientRect();
+            const rectT = elT.getBoundingClientRect();
 
-            if (spDirX === 0) spDirX = (tp.x > sp.x) ? 1 : -1;
-            if (tpDirX === 0) tpDirX = (sp.x > tp.x) ? 1 : -1;
+            // 1. Dapatkan kotak batas (Bounding Box) fisik komponen
+            const sLeft = (rectS.left - cr.left) / UIManager.currentZoom;
+            const sRight = sLeft + (rectS.width / UIManager.currentZoom);
+            const sTop = (rectS.top - cr.top) / UIManager.currentZoom;
+            const sBottom = sTop + (rectS.height / UIManager.currentZoom);
 
-            const offsetS = 10; const offsetT = 10; 
+            const tLeft = (rectT.left - cr.left) / UIManager.currentZoom;
+            const tRight = tLeft + (rectT.width / UIManager.currentZoom);
+            const tTop = (rectT.top - cr.top) / UIManager.currentZoom;
+            const tBottom = tTop + (rectT.height / UIManager.currentZoom);
+
+            // 2. Cari arah hadap pin Sumber
+            let spDirX = 0, spDirY = 0;
+            const dLeftS = Math.abs(sp.x - sLeft);
+            const dRightS = Math.abs(sRight - sp.x);
+            const dTopS = Math.abs(sp.y - sTop);
+            const dBotS = Math.abs(sBottom - sp.y);
+            
+            const minS = Math.min(dLeftS, dRightS, dTopS, dBotS);
+            if (minS === dLeftS) spDirX = -1;
+            else if (minS === dRightS) spDirX = 1;
+            else if (minS === dTopS) spDirY = -1;
+            else if (minS === dBotS) spDirY = 1;
+
+            // 3. Cari arah hadap pin Tujuan
+            let tpDirX = 0, tpDirY = 0;
+            const dLeftT = Math.abs(tp.x - tLeft);
+            const dRightT = Math.abs(tRight - tp.x);
+            const dTopT = Math.abs(tp.y - tTop);
+            const dBotT = Math.abs(tBottom - tp.y);
+            
+            const minT = Math.min(dLeftT, dRightT, dTopT, dBotT);
+            if (minT === dLeftT) tpDirX = -1;
+            else if (minT === dRightT) tpDirX = 1;
+            else if (minT === dTopT) tpDirY = -1;
+            else if (minT === dBotT) tpDirY = 1;
+
+            // 4. Jarak kabel keluar lurus
+            const offsetS = 15; 
+            const offsetT = 15; 
+            
             let p1x = sp.x + (spDirX * offsetS);
+            let p1y = sp.y + (spDirY * offsetS);
             let p2x = tp.x + (tpDirX * offsetT);
+            let p2y = tp.y + (tpDirY * offsetT);
 
-            if (spDirX === tpDirX) {
-                let bracketX = (spDirX === 1) ? Math.max(p1x, p2x) + 10 : Math.min(p1x, p2x) - 10;
-                pathStr += `L ${bracketX} ${sp.y} L ${bracketX} ${tp.y} L ${tp.x} ${tp.y}`;
-            } else {
-                const isFacing = (spDirX === 1 && tpDirX === -1 && sp.x <= tp.x) || (spDirX === -1 && tpDirX === 1 && sp.x >= tp.x);
+            pathStr += `L ${p1x} ${p1y} `;
+
+            // 5. LOGIKA RUTE CERDAS (Dengan Deteksi Jalur Terpendek)
+            if (spDirX !== 0 && spDirX === tpDirX) {
+                // C-Shape Horizontal
+                let bracketX = (spDirX === 1) ? Math.max(sRight, tRight) + 20 : Math.min(sLeft, tLeft) - 20;
+                pathStr += `L ${bracketX} ${p1y} L ${bracketX} ${p2y} L ${p2x} ${p2y} `;
+            } 
+            else if (spDirY !== 0 && spDirY === tpDirY) {
+                // C-Shape Vertikal
+                let bracketY = (spDirY === 1) ? Math.max(sBottom, tBottom) + 20 : Math.min(sTop, tTop) - 20;
+                pathStr += `L ${p1x} ${bracketY} L ${p2x} ${bracketY} L ${p2x} ${p2y} `;
+            } 
+            else if (spDirX !== 0 && tpDirY !== 0) {
+                // X ke Y
+                let isSafe = (p2x - p1x) * spDirX >= 0 && (p1y - p2y) * tpDirY >= 0;
+                if (isSafe) {
+                    pathStr += `L ${p2x} ${p1y} L ${p2x} ${p2y} `; 
+                } else {
+                    let wrapX = spDirX === 1 ? Math.max(sRight, tRight) + 20 : Math.min(sLeft, tLeft) - 20;
+                    let wrapY = tpDirY === 1 ? Math.max(sBottom, tBottom) + 20 : Math.min(sTop, tTop) - 20;
+                    pathStr += `L ${wrapX} ${p1y} L ${wrapX} ${wrapY} L ${p2x} ${wrapY} L ${p2x} ${p2y} `;
+                }
+            } 
+            else if (spDirY !== 0 && tpDirX !== 0) {
+                // Y ke X
+                let isSafe = (p2y - p1y) * spDirY >= 0 && (p1x - p2x) * tpDirX >= 0;
+                if (isSafe) {
+                    pathStr += `L ${p1x} ${p2y} L ${p2x} ${p2y} `; 
+                } else {
+                    let wrapY = spDirY === 1 ? Math.max(sBottom, tBottom) + 20 : Math.min(sTop, tTop) - 20;
+                    let wrapX = tpDirX === 1 ? Math.max(sRight, tRight) + 20 : Math.min(sLeft, tLeft) - 20;
+                    pathStr += `L ${p1x} ${wrapY} L ${wrapX} ${wrapY} L ${wrapX} ${p2y} L ${p2x} ${p2y} `;
+                }
+            } 
+            else if (spDirX !== 0 && spDirX !== tpDirX) {
+                // Kiri berhadapan dengan Kanan (Z-Shape Horizontal)
+                let isFacing = (spDirX === 1 && p1x <= p2x) || (spDirX === -1 && p1x >= p2x);
                 if (isFacing) {
                     let midX = (p1x + p2x) / 2;
-                    pathStr += `L ${midX} ${sp.y} L ${midX} ${tp.y} L ${tp.x} ${tp.y}`;
+                    pathStr += `L ${midX} ${p1y} L ${midX} ${p2y} L ${p2x} ${p2y} `;
                 } else {
-                    let wrapY;
-                    if (Math.abs(sp.y - tp.y) < 60) {
-                        const hS = ComponentDefs.getDimensions(compS.type)[1] || 60;
-                        const hT = ComponentDefs.getDimensions(compT.type)[1] || 60;
-                        wrapY = Math.max(compS.y + hS, compT.y + hT) + 20; 
-                    } else {
-                        wrapY = (sp.y + tp.y) / 2;
-                    }
-                    pathStr += `L ${p1x} ${sp.y} L ${p1x} ${wrapY} L ${p2x} ${wrapY} L ${p2x} ${tp.y} L ${tp.x} ${tp.y}`;
+                    // JIKA MEMBELAKANGI: Pilih jalan mutar lewat atas atau bawah? Cari yang terdekat!
+                    let wrapY = (p2y < p1y) ? Math.min(sTop, tTop) - 20 : Math.max(sBottom, tBottom) + 20;
+                    pathStr += `L ${p1x} ${wrapY} L ${p2x} ${wrapY} L ${p2x} ${p2y} `;
+                }
+            } 
+            else if (spDirY !== 0 && spDirY !== tpDirY) {
+                // Atas berhadapan dengan Bawah (Z-Shape Vertikal)
+                let isFacing = (spDirY === 1 && p1y <= p2y) || (spDirY === -1 && p1y >= p2y);
+                if (isFacing) {
+                    let midY = (p1y + p2y) / 2;
+                    pathStr += `L ${p1x} ${midY} L ${p2x} ${midY} L ${p2x} ${p2y} `;
+                } else {
+                    // JIKA MEMBELAKANGI (KASUS GAMBARMU): Pilih jalan mutar lewat kiri atau kanan? Cari yang terdekat!
+                    let wrapX = (p2x < p1x) ? Math.min(sLeft, tLeft) - 20 : Math.max(sRight, tRight) + 20;
+                    pathStr += `L ${wrapX} ${p1y} L ${wrapX} ${p2y} L ${p2x} ${p2y} `;
                 }
             }
+
+            pathStr += `L ${tp.x} ${tp.y}`;
         }
 
         let group = svg.querySelector(`g[data-wire-id="${conn.id}"]`);
