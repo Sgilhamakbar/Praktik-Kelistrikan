@@ -258,16 +258,14 @@ export function toggleComponentSelection(id) {
     }
 }
 
-// =====================================================================
-// 1. FUNGSI GESER KOMPONEN MENGGUNAKAN MOUSE (PC/LAPTOP)
-// =====================================================================
+// ─── Drag component & Group Drag ───────────────────────────────────────────────
 export function startDragComponent(e, compId) {
   if (!CircuitStore.selectedComponents.includes(compId)) selectComponent(compId);
 
   const startX = e.clientX;
   const startY = e.clientY;
   let moved = false;
-  let hasSavedState = false; 
+  let hasSavedState = false; // 🟢 1. TAMBAHAN BENDERA PENANDA
   const GRID_SIZE = 10;
 
   const dragGroup = CircuitStore.selectedComponents.map(id => {
@@ -275,22 +273,38 @@ export function startDragComponent(e, compId) {
     return { id: id, el: comp, origL: parseFloat(comp.style.left) || 0, origT: parseFloat(comp.style.top) || 0 };
   });
 
-  const affectedConnections = CircuitStore.connections.filter(conn =>
+  const affectedConnections = CircuitStore.connections.filter(conn => 
     CircuitStore.selectedComponents.includes(conn.source.compId) || CircuitStore.selectedComponents.includes(conn.target.compId)
   ).map(conn => {
+    // 🌟 PERBAIKAN: Ambil tipe pin secara pasti dari memori, jangan ditebak
     const sType = conn.source.type || 'output';
     const tType = conn.target.type || 'input';
+
+    // Dapatkan posisi pin menggunakan tipe yang akurat
     const spOrig = getPinPosition(conn.source.compId, sType, conn.source.pinIndex);
     const tpOrig = getPinPosition(conn.target.compId, tType, conn.target.pinIndex);
-    return { conn, origWaypoints: JSON.parse(JSON.stringify(conn.waypoints || [])), sourceMoved: CircuitStore.selectedComponents.includes(conn.source.compId), targetMoved: CircuitStore.selectedComponents.includes(conn.target.compId), spOrig, tpOrig };
+    
+    return { 
+        conn, 
+        origWaypoints: JSON.parse(JSON.stringify(conn.waypoints || [])), 
+        sourceMoved: CircuitStore.selectedComponents.includes(conn.source.compId), 
+        targetMoved: CircuitStore.selectedComponents.includes(conn.target.compId), 
+        spOrig, 
+        tpOrig 
+    };
   });
+
+  // HAPUS BARIS INI (Jika ada): let localSaveTimeout = null;
 
   function onMove(e) {
     const dx = (e.clientX - startX) / UIManager.currentZoom;
     const dy = (e.clientY - startY) / UIManager.currentZoom;
     
+    // 🟢 2. SIMPAN RIWAYAT TEPAT SEBELUM KOORDINAT DIUBAH
     if (Math.abs(dx) > 2 || Math.abs(dy) > 2) {
-        if (!hasSavedState) hasSavedState = true;
+        if (!hasSavedState) {
+            hasSavedState = true;
+        }
         moved = true;
     }
 
@@ -325,75 +339,112 @@ export function startDragComponent(e, compId) {
     });
 
     affectedConnections.forEach(({ conn, origWaypoints, sourceMoved, targetMoved, spOrig, tpOrig }) => {
+        // Jika KEDUA komponen di-drag bersamaan (Mode Pilih Blok Biru)
         if (sourceMoved && targetMoved) {
           conn.waypoints = origWaypoints.map(wp => ({ x: wp.x + snapDx, y: wp.y + snapDy }));
         } 
+        // 🌟 FITUR BARU: Push-Orthogonal Rubber-banding (Kabel Melar Anti-Nabrak)
         else if (origWaypoints.length > 0) {
           let newWps = origWaypoints.map(wp => ({ x: wp.x, y: wp.y }));
 
+          // -- 1. Tarikan pada Komponen SUMBER (Awal) --
           if (sourceMoved && spOrig) {
             let firstWp = newWps[0];
             let compS = CircuitStore.components.find(c => c.id === conn.source.compId);
             let wS = (typeof ComponentDefs !== 'undefined' && compS) ? (ComponentDefs.getDimensions(compS.type)[0] || 60) : 60;
             let hS = (typeof ComponentDefs !== 'undefined' && compS) ? (ComponentDefs.getDimensions(compS.type)[1] || 60) : 60;
             
-            let oldCompX = compS.x - snapDx; let oldCompY = compS.y - snapDy;
-            let isRightFacing = spOrig.x > (oldCompX + wS / 2); let isLeftFacing  = spOrig.x < (oldCompX + wS / 2);
+            // Dapatkan titik tengah komponen SEBELUM digeser
+            let oldCompX = compS.x - snapDx;
+            let oldCompY = compS.y - snapDy;
+            
+            let isRightFacing = spOrig.x > (oldCompX + wS / 2);
+            let isLeftFacing  = spOrig.x < (oldCompX + wS / 2);
 
-            // Toleransi <= 15px
-            if (Math.abs(origWaypoints[0].y - spOrig.y) <= 15) {
-                firstWp.y += snapDy; 
-                let newSpX = spOrig.x + snapDx; let requiredX = firstWp.x;
+            // Jika kabel aslinya keluar horizontal
+            if (Math.abs(origWaypoints[0].y - spOrig.y) <= 2) {
+                firstWp.y += snapDy; // Ikut naik/turun
+                
+                let newSpX = spOrig.x + snapDx;
+                let requiredX = firstWp.x;
+
+                // 🚀 DORONG MAJU jika pin mulai menabrak waypoint
                 if (isRightFacing && firstWp.x < newSpX + 20) requiredX = newSpX + 20;
                 else if (isLeftFacing && firstWp.x > newSpX - 20) requiredX = newSpX - 20;
 
                 let diffX = requiredX - firstWp.x;
                 if (diffX !== 0) {
-                    firstWp.x += diffX;
-                    if (newWps.length > 1 && Math.abs(origWaypoints[1].x - origWaypoints[0].x) <= 15) newWps[1].x += diffX;
+                    firstWp.x += diffX; // Geser titik 1
+                    // Geser juga titik ke-2 agar garis tetap siku-siku (tegak lurus)
+                    if (newWps.length > 1 && Math.abs(origWaypoints[1].x - origWaypoints[0].x) <= 2) {
+                        newWps[1].x += diffX;
+                    }
                 }
             }
-            else if (Math.abs(origWaypoints[0].x - spOrig.x) <= 15) {
-                firstWp.x += snapDx; 
-                let isBottomFacing = spOrig.y > (oldCompY + hS / 2); let isTopFacing = spOrig.y < (oldCompY + hS / 2);
-                let newSpY = spOrig.y + snapDy; let requiredY = firstWp.y;
+            // Jika kabel aslinya keluar vertikal
+            else if (Math.abs(origWaypoints[0].x - spOrig.x) <= 2) {
+                firstWp.x += snapDx; // Ikut geser kiri/kanan
+                
+                let isBottomFacing = spOrig.y > (oldCompY + hS / 2);
+                let isTopFacing    = spOrig.y < (oldCompY + hS / 2);
+                let newSpY = spOrig.y + snapDy;
+                let requiredY = firstWp.y;
 
+                // 🚀 DORONG MAJU jika pin mulai menabrak waypoint
                 if (isBottomFacing && firstWp.y < newSpY + 20) requiredY = newSpY + 20;
                 else if (isTopFacing && firstWp.y > newSpY - 20) requiredY = newSpY - 20;
 
                 let diffY = requiredY - firstWp.y;
                 if (diffY !== 0) {
                     firstWp.y += diffY;
-                    if (newWps.length > 1 && Math.abs(origWaypoints[1].y - origWaypoints[0].y) <= 15) newWps[1].y += diffY;
+                    if (newWps.length > 1 && Math.abs(origWaypoints[1].y - origWaypoints[0].y) <= 2) {
+                        newWps[1].y += diffY;
+                    }
                 }
             }
           }
 
+          // -- 2. Tarikan pada Komponen TUJUAN (Akhir) --
           if (targetMoved && tpOrig) {
-            let lastIdx = newWps.length - 1; let lastWp = newWps[lastIdx];
+            let lastIdx = newWps.length - 1;
+            let lastWp = newWps[lastIdx];
             let compT = CircuitStore.components.find(c => c.id === conn.target.compId);
             let wT = (typeof ComponentDefs !== 'undefined' && compT) ? (ComponentDefs.getDimensions(compT.type)[0] || 60) : 60;
             let hT = (typeof ComponentDefs !== 'undefined' && compT) ? (ComponentDefs.getDimensions(compT.type)[1] || 60) : 60;
             
-            let oldCompX = compT.x - snapDx; let oldCompY = compT.y - snapDy;
-            let isRightFacing = tpOrig.x > (oldCompX + wT / 2); let isLeftFacing  = tpOrig.x < (oldCompX + wT / 2);
+            let oldCompX = compT.x - snapDx;
+            let oldCompY = compT.y - snapDy;
 
-            if (Math.abs(origWaypoints[lastIdx].y - tpOrig.y) <= 15) {
+            let isRightFacing = tpOrig.x > (oldCompX + wT / 2);
+            let isLeftFacing  = tpOrig.x < (oldCompX + wT / 2);
+
+            // Jika kabel masuk horizontal
+            if (Math.abs(origWaypoints[lastIdx].y - tpOrig.y) <= 2) {
                 lastWp.y += snapDy;
-                let newTpX = tpOrig.x + snapDx; let requiredX = lastWp.x;
+                
+                let newTpX = tpOrig.x + snapDx;
+                let requiredX = lastWp.x;
+
+                // 🚀 DORONG MAJU jika pin menabrak waypoint
                 if (isRightFacing && lastWp.x < newTpX + 20) requiredX = newTpX + 20;
                 else if (isLeftFacing && lastWp.x > newTpX - 20) requiredX = newTpX - 20;
 
                 let diffX = requiredX - lastWp.x;
                 if (diffX !== 0) {
                     lastWp.x += diffX;
-                    if (lastIdx > 0 && Math.abs(origWaypoints[lastIdx - 1].x - origWaypoints[lastIdx].x) <= 15) newWps[lastIdx - 1].x += diffX;
+                    if (lastIdx > 0 && Math.abs(origWaypoints[lastIdx - 1].x - origWaypoints[lastIdx].x) <= 2) {
+                        newWps[lastIdx - 1].x += diffX;
+                    }
                 }
             }
-            else if (Math.abs(origWaypoints[lastIdx].x - tpOrig.x) <= 15) {
+            // Jika kabel masuk vertikal
+            else if (Math.abs(origWaypoints[lastIdx].x - tpOrig.x) <= 2) {
                 lastWp.x += snapDx;
-                let isBottomFacing = tpOrig.y > (oldCompY + hT / 2); let isTopFacing = tpOrig.y < (oldCompY + hT / 2);
-                let newTpY = tpOrig.y + snapDy; let requiredY = lastWp.y;
+                
+                let isBottomFacing = tpOrig.y > (oldCompY + hT / 2);
+                let isTopFacing    = tpOrig.y < (oldCompY + hT / 2);
+                let newTpY = tpOrig.y + snapDy;
+                let requiredY = lastWp.y;
 
                 if (isBottomFacing && lastWp.y < newTpY + 20) requiredY = newTpY + 20;
                 else if (isTopFacing && lastWp.y > newTpY - 20) requiredY = newTpY - 20;
@@ -401,34 +452,52 @@ export function startDragComponent(e, compId) {
                 let diffY = requiredY - lastWp.y;
                 if (diffY !== 0) {
                     lastWp.y += diffY;
-                    if (lastIdx > 0 && Math.abs(origWaypoints[lastIdx - 1].y - origWaypoints[lastIdx].y) <= 15) newWps[lastIdx - 1].y += diffY;
+                    if (lastIdx > 0 && Math.abs(origWaypoints[lastIdx - 1].y - origWaypoints[lastIdx].y) <= 2) {
+                        newWps[lastIdx - 1].y += diffY;
+                    }
                 }
             }
           }
+
           conn.waypoints = newWps;
-        } else {
+        }
+        // Jika kabel tidak punya belokan sama sekali, auto-route murni bekerja
+        else {
           conn.waypoints = [];
         }
-    });
-
-    if (typeof optimizedDrawConnections !== 'undefined') optimizedDrawConnections();
+      });
+    optimizedDrawConnections();
   }
 
   function onUp() {
     document.removeEventListener('mousemove', onMove);
     document.removeEventListener('mouseup', onUp);
+
     if (moved) {
       let moveData = { components: [], connections: [] };
+
+      // Catat pergeseran komponen
       dragGroup.forEach(item => {
         const cd = CircuitStore.components.find(c => c.id === item.id);
         if (cd) { 
-            cd.x = parseFloat(item.el.style.left) || 0; cd.y = parseFloat(item.el.style.top) || 0; 
-            moveData.components.push({ id: item.id, origX: item.origL, origY: item.origT, newX: cd.x, newY: cd.y });
+            cd.x = parseFloat(item.el.style.left) || 0; 
+            cd.y = parseFloat(item.el.style.top) || 0; 
+            moveData.components.push({
+                id: item.id, origX: item.origL, origY: item.origT, newX: cd.x, newY: cd.y
+            });
         }
       });
+
+      // Catat pergeseran kabel yang ikut tertarik
       affectedConnections.forEach(ac => {
-          moveData.connections.push({ id: ac.conn.id, origWaypoints: JSON.parse(JSON.stringify(ac.origWaypoints || [])), newWaypoints: JSON.parse(JSON.stringify(ac.conn.waypoints || [])) });
+          moveData.connections.push({
+              id: ac.conn.id,
+              origWaypoints: JSON.parse(JSON.stringify(ac.origWaypoints || [])),
+              newWaypoints: JSON.parse(JSON.stringify(ac.conn.waypoints || []))
+          });
       });
+
+      // 🟢 REKAM AKSI MOVE_COMPONENT KE MEMORI
       if (typeof HistoryManager !== 'undefined' && !CircuitStore.isUndoRedoOp) {
           HistoryManager.pushCommand('MOVE_COMPONENT', moveData, `Geser ${dragGroup.length} komponen`);
       }
@@ -438,15 +507,12 @@ export function startDragComponent(e, compId) {
   document.addEventListener('mouseup', onUp);
 }
 
-// =====================================================================
-// 2. FUNGSI GESER KOMPONEN MENGGUNAKAN LAYAR SENTUH (HP/TABLET)
-// =====================================================================
 export function startTouchDragComponent(e, compId) {
   if (!CircuitStore.selectedComponents.includes(compId)) selectComponent(compId);
   const t0 = e.touches[0];
   const startX = t0.clientX, startY = t0.clientY;
   let moved = false;
-  let hasSavedState = false; 
+  let hasSavedState = false;
   const GRID_SIZE = 10;
 
   const dragGroup = CircuitStore.selectedComponents.map(id => {
@@ -454,6 +520,7 @@ export function startTouchDragComponent(e, compId) {
     return { id: id, el: comp, origL: parseFloat(comp.style.left)||0, origT: parseFloat(comp.style.top)||0 };
   });
 
+  // 🌟 PERBAIKAN 1: Deteksi akurat posisi pin khusus untuk layar sentuh HP
   const affectedConnections = CircuitStore.connections.filter(conn => 
     CircuitStore.selectedComponents.includes(conn.source.compId) || CircuitStore.selectedComponents.includes(conn.target.compId)
   ).map(conn => {
@@ -461,7 +528,15 @@ export function startTouchDragComponent(e, compId) {
     const tType = conn.target.type || 'input';
     const spOrig = getPinPosition(conn.source.compId, sType, conn.source.pinIndex);
     const tpOrig = getPinPosition(conn.target.compId, tType, conn.target.pinIndex);
-    return { conn, origWaypoints: JSON.parse(JSON.stringify(conn.waypoints || [])), sourceMoved: CircuitStore.selectedComponents.includes(conn.source.compId), targetMoved: CircuitStore.selectedComponents.includes(conn.target.compId), spOrig, tpOrig };
+    
+    return { 
+        conn, 
+        origWaypoints: JSON.parse(JSON.stringify(conn.waypoints || [])), 
+        sourceMoved: CircuitStore.selectedComponents.includes(conn.source.compId), 
+        targetMoved: CircuitStore.selectedComponents.includes(conn.target.compId), 
+        spOrig, 
+        tpOrig 
+    };
   });
 
   function onMove(e) {
@@ -487,6 +562,7 @@ export function startTouchDragComponent(e, compId) {
         const rot = (cd && cd.rotation) ? cd.rotation : 0;
           
         let shiftX = 0, shiftY = 0;
+
         if (rot === 90 || rot === 270) {
              const w = item.el.offsetWidth;
              const h = item.el.offsetHeight;
@@ -504,9 +580,11 @@ export function startTouchDragComponent(e, compId) {
 
         item.el.style.left = `${newX}px`;
         item.el.style.top = `${newY}px`;
+
         if (cd) { cd.x = newX; cd.y = newY; }
       });
       
+      // 🌟 PERBAIKAN 2: Logika kabel melar (Push-Orthogonal) digabungkan ke event Sentuh
       affectedConnections.forEach(({ conn, origWaypoints, sourceMoved, targetMoved, spOrig, tpOrig }) => {
         if (sourceMoved && targetMoved) {
           conn.waypoints = origWaypoints.map(wp => ({ x: wp.x + snapDx, y: wp.y + snapDy }));
@@ -519,26 +597,35 @@ export function startTouchDragComponent(e, compId) {
             let compS = CircuitStore.components.find(c => c.id === conn.source.compId);
             let wS = (typeof ComponentDefs !== 'undefined' && compS) ? (ComponentDefs.getDimensions(compS.type)[0] || 60) : 60;
             let hS = (typeof ComponentDefs !== 'undefined' && compS) ? (ComponentDefs.getDimensions(compS.type)[1] || 60) : 60;
-            let oldCompX = compS.x - snapDx; let oldCompY = compS.y - snapDy;
-            let isRightFacing = spOrig.x > (oldCompX + wS / 2); let isLeftFacing  = spOrig.x < (oldCompX + wS / 2);
+            
+            let oldCompX = compS.x - snapDx;
+            let oldCompY = compS.y - snapDy;
+            
+            let isRightFacing = spOrig.x > (oldCompX + wS / 2);
+            let isLeftFacing  = spOrig.x < (oldCompX + wS / 2);
 
-            // Toleransi <= 15px
-            if (Math.abs(origWaypoints[0].y - spOrig.y) <= 15) {
-                firstWp.y += snapDy;
-                let newSpX = spOrig.x + snapDx; let requiredX = firstWp.x;
+            if (Math.abs(origWaypoints[0].y - spOrig.y) <= 2) {
+                firstWp.y += snapDy; 
+                let newSpX = spOrig.x + snapDx;
+                let requiredX = firstWp.x;
+
                 if (isRightFacing && firstWp.x < newSpX + 20) requiredX = newSpX + 20;
                 else if (isLeftFacing && firstWp.x > newSpX - 20) requiredX = newSpX - 20;
 
                 let diffX = requiredX - firstWp.x;
                 if (diffX !== 0) {
-                    firstWp.x += diffX;
-                    if (newWps.length > 1 && Math.abs(origWaypoints[1].x - origWaypoints[0].x) <= 15) newWps[1].x += diffX;
+                    firstWp.x += diffX; 
+                    if (newWps.length > 1 && Math.abs(origWaypoints[1].x - origWaypoints[0].x) <= 2) {
+                        newWps[1].x += diffX;
+                    }
                 }
             }
-            else if (Math.abs(origWaypoints[0].x - spOrig.x) <= 15) {
-                firstWp.x += snapDx;
-                let isBottomFacing = spOrig.y > (oldCompY + hS / 2); let isTopFacing = spOrig.y < (oldCompY + hS / 2);
-                let newSpY = spOrig.y + snapDy; let requiredY = firstWp.y;
+            else if (Math.abs(origWaypoints[0].x - spOrig.x) <= 2) {
+                firstWp.x += snapDx; 
+                let isBottomFacing = spOrig.y > (oldCompY + hS / 2);
+                let isTopFacing    = spOrig.y < (oldCompY + hS / 2);
+                let newSpY = spOrig.y + snapDy;
+                let requiredY = firstWp.y;
 
                 if (isBottomFacing && firstWp.y < newSpY + 20) requiredY = newSpY + 20;
                 else if (isTopFacing && firstWp.y > newSpY - 20) requiredY = newSpY - 20;
@@ -546,22 +633,30 @@ export function startTouchDragComponent(e, compId) {
                 let diffY = requiredY - firstWp.y;
                 if (diffY !== 0) {
                     firstWp.y += diffY;
-                    if (newWps.length > 1 && Math.abs(origWaypoints[1].y - origWaypoints[0].y) <= 15) newWps[1].y += diffY;
+                    if (newWps.length > 1 && Math.abs(origWaypoints[1].y - origWaypoints[0].y) <= 2) {
+                        newWps[1].y += diffY;
+                    }
                 }
             }
           }
 
           if (targetMoved && tpOrig) {
-            let lastIdx = newWps.length - 1; let lastWp = newWps[lastIdx];
+            let lastIdx = newWps.length - 1;
+            let lastWp = newWps[lastIdx];
             let compT = CircuitStore.components.find(c => c.id === conn.target.compId);
             let wT = (typeof ComponentDefs !== 'undefined' && compT) ? (ComponentDefs.getDimensions(compT.type)[0] || 60) : 60;
             let hT = (typeof ComponentDefs !== 'undefined' && compT) ? (ComponentDefs.getDimensions(compT.type)[1] || 60) : 60;
-            let oldCompX = compT.x - snapDx; let oldCompY = compT.y - snapDy;
-            let isRightFacing = tpOrig.x > (oldCompX + wT / 2); let isLeftFacing  = tpOrig.x < (oldCompX + wT / 2);
+            
+            let oldCompX = compT.x - snapDx;
+            let oldCompY = compT.y - snapDy;
 
-            if (Math.abs(origWaypoints[lastIdx].y - tpOrig.y) <= 15) {
+            let isRightFacing = tpOrig.x > (oldCompX + wT / 2);
+            let isLeftFacing  = tpOrig.x < (oldCompX + wT / 2);
+
+            if (Math.abs(origWaypoints[lastIdx].y - tpOrig.y) <= 2) {
                 lastWp.y += snapDy;
-                let newTpX = tpOrig.x + snapDx; let requiredX = lastWp.x;
+                let newTpX = tpOrig.x + snapDx;
+                let requiredX = lastWp.x;
 
                 if (isRightFacing && lastWp.x < newTpX + 20) requiredX = newTpX + 20;
                 else if (isLeftFacing && lastWp.x > newTpX - 20) requiredX = newTpX - 20;
@@ -569,13 +664,17 @@ export function startTouchDragComponent(e, compId) {
                 let diffX = requiredX - lastWp.x;
                 if (diffX !== 0) {
                     lastWp.x += diffX;
-                    if (lastIdx > 0 && Math.abs(origWaypoints[lastIdx - 1].x - origWaypoints[lastIdx].x) <= 15) newWps[lastIdx - 1].x += diffX;
+                    if (lastIdx > 0 && Math.abs(origWaypoints[lastIdx - 1].x - origWaypoints[lastIdx].x) <= 2) {
+                        newWps[lastIdx - 1].x += diffX;
+                    }
                 }
             }
-            else if (Math.abs(origWaypoints[lastIdx].x - tpOrig.x) <= 15) {
+            else if (Math.abs(origWaypoints[lastIdx].x - tpOrig.x) <= 2) {
                 lastWp.x += snapDx;
-                let isBottomFacing = tpOrig.y > (oldCompY + hT / 2); let isTopFacing = tpOrig.y < (oldCompY + hT / 2);
-                let newTpY = tpOrig.y + snapDy; let requiredY = lastWp.y;
+                let isBottomFacing = tpOrig.y > (oldCompY + hT / 2);
+                let isTopFacing    = tpOrig.y < (oldCompY + hT / 2);
+                let newTpY = tpOrig.y + snapDy;
+                let requiredY = lastWp.y;
 
                 if (isBottomFacing && lastWp.y < newTpY + 20) requiredY = newTpY + 20;
                 else if (isTopFacing && lastWp.y > newTpY - 20) requiredY = newTpY - 20;
@@ -583,33 +682,49 @@ export function startTouchDragComponent(e, compId) {
                 let diffY = requiredY - lastWp.y;
                 if (diffY !== 0) {
                     lastWp.y += diffY;
-                    if (lastIdx > 0 && Math.abs(origWaypoints[lastIdx - 1].y - origWaypoints[lastIdx].y) <= 15) newWps[lastIdx - 1].y += diffY;
+                    if (lastIdx > 0 && Math.abs(origWaypoints[lastIdx - 1].y - origWaypoints[lastIdx].y) <= 2) {
+                        newWps[lastIdx - 1].y += diffY;
+                    }
                 }
             }
           }
+
           conn.waypoints = newWps;
         }
-        else { conn.waypoints = []; }
+        else {
+          conn.waypoints = [];
+        }
       });
-      if (typeof optimizedDrawConnections !== 'undefined') optimizedDrawConnections();
+      optimizedDrawConnections();
     }
   }
   
   function onEnd() {
     document.removeEventListener('touchmove', onMove);
     document.removeEventListener('touchend', onEnd);
+    
     if (moved) {
       let moveData = { components: [], connections: [] };
+
       dragGroup.forEach(item => {
         const cd = CircuitStore.components.find(c => c.id === item.id);
         if (cd) { 
-            cd.x = parseFloat(item.el.style.left) || 0; cd.y = parseFloat(item.el.style.top) || 0; 
-            moveData.components.push({ id: item.id, origX: item.origL, origY: item.origT, newX: cd.x, newY: cd.y });
+            cd.x = parseFloat(item.el.style.left) || 0; 
+            cd.y = parseFloat(item.el.style.top) || 0; 
+            moveData.components.push({
+                id: item.id, origX: item.origL, origY: item.origT, newX: cd.x, newY: cd.y
+            });
         }
       });
+
       affectedConnections.forEach(ac => {
-          moveData.connections.push({ id: ac.conn.id, origWaypoints: JSON.parse(JSON.stringify(ac.origWaypoints || [])), newWaypoints: JSON.parse(JSON.stringify(ac.conn.waypoints || [])) });
+          moveData.connections.push({
+              id: ac.conn.id,
+              origWaypoints: JSON.parse(JSON.stringify(ac.origWaypoints || [])),
+              newWaypoints: JSON.parse(JSON.stringify(ac.conn.waypoints || []))
+          });
       });
+
       if (typeof HistoryManager !== 'undefined' && !CircuitStore.isUndoRedoOp) {
           HistoryManager.pushCommand('MOVE_COMPONENT', moveData, `Geser ${dragGroup.length} komponen`);
       }
