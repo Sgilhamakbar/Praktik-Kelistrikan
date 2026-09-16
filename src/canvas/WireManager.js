@@ -794,7 +794,7 @@ export function drawConnections() {
         }
 
         let group = svg.querySelector(`g[data-wire-id="${conn.id}"]`);
-        let basePath, flowPath, hitboxPath; // 🌟 Tambahkan hitboxPath
+        let basePath, flowPath, hitboxPath;
         
         if (!group) {
             group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
@@ -812,7 +812,7 @@ export function drawConnections() {
             flowPath.classList.add('wire-flow');
             flowPath.style.pointerEvents = 'none'; // Matikan interaksi
 
-            // 🌟 3. GARIS HITBOX GAIB (Area Sentuh Super Lebar: 30px)
+            // 3. GARIS HITBOX GAIB (Area Sentuh Super Lebar: 30px)
             hitboxPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             hitboxPath.classList.add('wire-hitbox');
             // cssText menimpa aturan CSS agar 100% gaib tapi tetap bisa diklik
@@ -952,7 +952,8 @@ export function drawConnections() {
             };
             hitboxPath.addEventListener('dblclick', handleSplit);
 
-            // 🎨 MUNCULKAN PALET WARNA (PC & HP)
+             // 🎨 3. MUNCULKAN PALET WARNA (PC: Klik Kanan, HP: Tahan Jari)
+             // Fungsi pembantu agar kode tidak berulang
             const showColorPalette = (clientX, clientY) => {
                 window.activeWireForColor = conn.id; 
                 const palette = document.getElementById('wireColorPalette');
@@ -965,13 +966,13 @@ export function drawConnections() {
                 }
             };
 
-            // Klik Kanan PC
+            // EVENT KLIK KANAN (Mouse PC/Laptop)
             hitboxPath.addEventListener('contextmenu', (e) => {
                 e.preventDefault(); e.stopPropagation();
                 showColorPalette(e.clientX, e.clientY);
             });
 
-            // Long Press HP
+            // EVENT LONG PRESS (Layar Sentuh HP/Tablet)
             let longPressTimer;
             let isLongPress = false;
 
@@ -1009,7 +1010,7 @@ export function drawConnections() {
         // UPDATE SHAPE PATH UNTUK KETIGA GARIS
         basePath.setAttribute('d', pathStr);
         flowPath.setAttribute('d', pathStr);
-        hitboxPath.setAttribute('d', pathStr); // Hitbox wajib ikut melengkung sesuai kabel asli
+        hitboxPath.setAttribute('d', pathStr);
 
         // DATASET DISIMPAN DI HITBOX, BUKAN BASEPATH
         hitboxPath.dataset.sId = conn.source.compId; 
