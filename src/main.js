@@ -22,6 +22,7 @@ import {
     initMarqueeSelection, 
     initCanvasEvents,
     toggleSelectMode, 
+    toggleWireMode,
     selectAllComponents, 
     adjustSensorValue, 
     adjustFlasherSpeed, 
@@ -73,6 +74,7 @@ document.addEventListener('click', () => {
     }
 });
 window.toggleSelectMode = toggleSelectMode;
+window.toggleWireMode = toggleWireMode;
 window.selectAllComponents = selectAllComponents;
 window.adjustSensorValue = adjustSensorValue;
 window.adjustFlasherSpeed = adjustFlasherSpeed;
