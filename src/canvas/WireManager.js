@@ -919,7 +919,7 @@ export function drawConnections() {
             hitboxPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             hitboxPath.classList.add('wire-hitbox');
             // cssText menimpa aturan CSS agar 100% gaib tapi tetap bisa diklik
-            hitboxPath.style.cssText = 'fill: none !important; stroke: transparent !important; stroke-width: 10px !important; pointer-events: stroke !important; cursor: pointer !important;';
+            hitboxPath.style.cssText = 'fill: none !important; stroke: transparent !important; stroke-width: 20px !important; pointer-events: stroke !important; cursor: pointer !important;';
 
             group.appendChild(basePath);
             group.appendChild(flowPath);
@@ -1262,6 +1262,5 @@ function getPinLabel(compType, pinType, index) {
     if (compType === 'battery' || compType === 'battery_1cell' || compType === 'battery_multi') {
         return index === 0 ? 'Positif (+)' : 'Negatif (-) Ground';
     }
-    
     return `${pinType === 'input' ? 'Input' : 'Output'} ${index + 1}`;
 }
