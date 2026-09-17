@@ -302,9 +302,11 @@ body.is-routing-wire .wire-hitbox { pointer-events: none !important; }
 .meter-val { font-family: monospace; font-size: 14px; font-weight: bold; fill: #10b981; }
 
 .connection-point { position: absolute; width: 12px; height: 12px; background: #ef4444; border: 2px solid #7f1d1d; border-radius: 50%; cursor: pointer; z-index: 20; transition: all 0.2s; touch-action: none; transform: translate(-50%, -50%); }
+.connection-point::after { content: ''; position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px; border-radius: 50%; background: transparent; }
 .connection-point[data-polarity="neg"] { background: #000000; border-color: #333; }
 .connection-point:hover { background: #22c55e; transform: translate(-50%, -50%) scale(1.5); box-shadow: 0 0 5px rgba(34,197,94,0.8); border-color: #14532d; }
 .connection-point.connected { background: #16a34a; border-color: #14532d; }
+
 .connection-point.pending { box-shadow: 0 0 10px rgba(34,197,94,0.8); background: #22c55e; transform: translate(-50%, -50%) scale(1.3); }
 .leg-active { stroke: var(--success) !important; }
 /* 🟢 MENYEMBUNYIKAN PIN VIRTUAL KHUSUS UNTUK TITIK SOLDER */
@@ -466,10 +468,6 @@ body.is-routing-wire .wire-hitbox { pointer-events: none !important; }
   .nav-item svg { width: 24px; height: 24px; stroke-width: 2px; transition: transform 0.2s; }
   .nav-item.active { color: var(--primary); }
   .nav-item:active svg { transform: scale(0.85); }
-  /* KUNCI: Matikan pointer-events pin di HP jika mode rakit kabel belum aktif */
-  body:not(.wiring-mode-active) .connection-point {
-    pointer-events: none !important;
-  }
 }
 /* =========================================
    KHUSUS TOMBOL ROTASI (Memaksimalkan Ruang)
@@ -586,7 +584,7 @@ body.is-routing-wire .wire-hitbox { pointer-events: none !important; }
 
 /* 2. Modifikasi kotak putihnya menjadi panel tinggi penuh */
 #valueModal .modal-content {
-  /* Area panelnya sendiri tetap bisa diklik */
+    /* Area panelnya sendiri tetap bisa diklik */
   pointer-events: auto; 
   margin: 0;
   width: 340px; 
