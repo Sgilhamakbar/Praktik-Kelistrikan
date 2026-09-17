@@ -903,28 +903,30 @@ export function drawConnections() {
             group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
             group.setAttribute('data-wire-id', conn.id);
 
-            // 1. GARIS VISUAL
+            // 1. GARIS VISUAL (Hanya untuk dilihat, tipis)
             basePath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             basePath.setAttribute('fill', 'none');
             basePath.classList.add('wire-base');
-            basePath.style.pointerEvents = 'none';
+            basePath.style.pointerEvents = 'none'; // Matikan interaksi sentuh di sini!
 
             // 2. GARIS ANIMASI ARUS
             flowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             flowPath.setAttribute('fill', 'none');
             flowPath.classList.add('wire-flow');
-            flowPath.style.pointerEvents = 'none';
+            flowPath.style.pointerEvents = 'none'; // Matikan interaksi
 
-            // 🌟 3. GARIS HITBOX (Dikembalikan ke 10px untuk sirkuit rapat)
+            // 3. GARIS HITBOX GAIB (Area Sentuh 10px)
             hitboxPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             hitboxPath.classList.add('wire-hitbox');
+            // cssText menimpa aturan CSS agar 100% gaib tapi tetap bisa diklik
             hitboxPath.style.cssText = 'fill: none !important; stroke: transparent !important; stroke-width: 10px !important; pointer-events: stroke !important; cursor: pointer !important;';
 
             group.appendChild(basePath);
             group.appendChild(flowPath);
-            group.appendChild(hitboxPath); 
+            group.appendChild(hitboxPath); // Hitbox harus di-append paling akhir agar berada di atas
             svg.appendChild(group);
 
+            // --- EFEK HOVER MANUAL (Karena hitbox menutupi garis asli) ---
             hitboxPath.addEventListener('mouseenter', () => {
                 basePath.style.stroke = 'var(--danger)';
                 basePath.style.strokeWidth = '4.5px';
@@ -934,20 +936,33 @@ export function drawConnections() {
                 basePath.style.stroke = '';
                 basePath.style.strokeWidth = '';
                 basePath.style.filter = '';
-                updateWireStates(); 
+                updateWireStates(); // Kembalikan ke warna asli/tegangan
             });
 
+            // --- SEMUA INTERAKSI KINI DIAMBIL ALIH OLEH HITBOX ---
             const handleWireInteract = (e) => { 
                 e.stopPropagation(); e.preventDefault(); 
                 
+                // Ambil data dari dataset HITBOX
                 const sId = +hitboxPath.dataset.sId; const sIdx = +hitboxPath.dataset.sIdx; const sType = hitboxPath.dataset.sType;
                 const tId = +hitboxPath.dataset.tId; const tIdx = +hitboxPath.dataset.tIdx; const tType = hitboxPath.dataset.tType;
+
+                // 🌟 PERBAIKAN 1: Baca memori posisi terakhir jari (changedTouches) saat diangkat
+                let clientX, clientY;
+                if (e.changedTouches && e.changedTouches.length > 0) {
+                    clientX = e.changedTouches[0].clientX;
+                    clientY = e.changedTouches[0].clientY;
+                } else if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
 
                 if (CircuitStore.connectionStart) {
                     const canvas = document.getElementById('canvas');
                     const cr = canvas.getBoundingClientRect();
-                    let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                    let clientY = e.touches ? e.touches[0].clientY : e.clientY;
                     let mx = Math.round(((clientX - cr.left) / UIManager.currentZoom) / 10) * 10;
                     let my = Math.round(((clientY - cr.top) / UIManager.currentZoom) / 10) * 10;
 
@@ -965,8 +980,8 @@ export function drawConnections() {
                             let minX = Math.min(p1.x, p2.x), maxX = Math.max(p1.x, p2.x);
                             let minY = Math.min(p1.y, p2.y), maxY = Math.max(p1.y, p2.y);
                             
-                            // 🌟 FIX: Toleransi pencarian titik potong dikembalikan ke 10px
-                            if (mx >= minX - 10 && mx <= maxX + 10 && my >= minY - 10 && my <= maxY + 10) {
+                            // 🌟 PERBAIKAN 2: Perlebar Zona Magnet/Toleransi menjadi 30px
+                            if (mx >= minX - 30 && mx <= maxX + 30 && my >= minY - 30 && my <= maxY + 30) {
                                 splitIdx = i; break;
                             }
                         }
@@ -1035,6 +1050,7 @@ export function drawConnections() {
                 }
             };
             
+            // Pasang fungsi hapus/splice ke HITBOX
             hitboxPath.addEventListener('click', handleWireInteract); 
             
             const handleSplit = (e) => {
@@ -1042,17 +1058,29 @@ export function drawConnections() {
                 const ct = document.querySelector('.confirm-toast'); 
                 if (ct) ct.remove();
 
+                // 🌟 PERBAIKAN 1 JUGA DITERAPKAN DI SINI
+                let clientX, clientY;
+                if (e.changedTouches && e.changedTouches.length > 0) {
+                    clientX = e.changedTouches[0].clientX;
+                    clientY = e.changedTouches[0].clientY;
+                } else if (e.touches && e.touches.length > 0) {
+                    clientX = e.touches[0].clientX;
+                    clientY = e.touches[0].clientY;
+                } else {
+                    clientX = e.clientX;
+                    clientY = e.clientY;
+                }
+
                 const canvas = document.getElementById('canvas');
                 const cr = canvas.getBoundingClientRect();
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
                 const x = (clientX - cr.left) / UIManager.currentZoom;
                 const y = (clientY - cr.top) / UIManager.currentZoom;
-                
-                window.splitWireToNode(conn.id, x - 10, y - 10); 
+                window.splitWireToNode(conn.id, x - 30, y - 30); 
             };
             hitboxPath.addEventListener('dblclick', handleSplit);
 
+             // 🎨 3. MUNCULKAN PALET WARNA (PC: Klik Kanan, HP: Tahan Jari)
+             // Fungsi pembantu agar kode tidak berulang
             const showColorPalette = (clientX, clientY) => {
                 window.activeWireForColor = conn.id; 
                 const palette = document.getElementById('wireColorPalette');
@@ -1065,11 +1093,13 @@ export function drawConnections() {
                 }
             };
 
+            // EVENT KLIK KANAN (Mouse PC/Laptop)
             hitboxPath.addEventListener('contextmenu', (e) => {
                 e.preventDefault(); e.stopPropagation();
                 showColorPalette(e.clientX, e.clientY);
             });
 
+            // EVENT LONG PRESS (Layar Sentuh HP/Tablet)
             let longPressTimer;
             let isLongPress = false;
 
@@ -1097,6 +1127,7 @@ export function drawConnections() {
                 }
                 lastWireTap = currentTime;
             }, {passive: false});
+
         } else {
             basePath = group.querySelector('.wire-base');
             flowPath = group.querySelector('.wire-flow');
