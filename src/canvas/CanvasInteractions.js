@@ -126,6 +126,50 @@ export const adjustFlasherSpeed = function(id, delta) {
     }
 };
 
+// ─── Fitur Mode Rakit Kabel (Safety Lock) ──────────────────────────────────────
+export const toggleWireMode = () => {
+    if (typeof CircuitStore === 'undefined') return;
+    
+    // Default awal adalah false (mati)
+    if (CircuitStore.isWireMode === undefined) CircuitStore.isWireMode = false;
+    
+    CircuitStore.isWireMode = !CircuitStore.isWireMode;
+    
+    const btnBottom = document.getElementById('btnWireModeBottom');
+    const btnTop = document.getElementById('btnWireModeTop');
+    
+    if (CircuitStore.isWireMode) {
+        // Nyalakan visual tombol
+        if (btnBottom) btnBottom.classList.add('active');
+        if (btnTop) {
+            btnTop.classList.remove('btn-secondary');
+            btnTop.classList.add('btn-primary');
+        }
+        
+        // Matikan mode "Pilih Blok" jika sedang menyala agar tidak bentrok
+        if (CircuitStore.isSelectMode) toggleSelectMode();
+        
+        UIManager.showToast('🔌 Mode Rakit Kabel Di Aktifkan');
+    } else {
+        // Matikan visual tombol
+        if (btnBottom) btnBottom.classList.remove('active');
+        if (btnTop) {
+            btnTop.classList.remove('btn-primary');
+            btnTop.classList.add('btn-secondary');
+        }
+        
+        UIManager.showToast('🔒 Mode rakit Kabel di nonaktifkan');
+        
+        // BATALKAN kabel yang sedang menggantung (jika ada) saat tombol dimatikan
+        if (CircuitStore.connectionStart) {
+            CircuitStore.connectionStart = null;
+            CircuitStore.tempWaypoints = [];
+            let tw = document.getElementById('temp-wire-path'); if(tw) tw.remove();
+            document.querySelectorAll('.connection-point').forEach(p => p.classList.remove('pending'));
+        }
+    }
+};
+
 // ─── Fitur Mode Pilih (Tablet/HP) ──────────────────────────────────────────────
 export const toggleSelectMode = () => {
     if (typeof CircuitStore === 'undefined') return;
