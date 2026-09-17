@@ -212,7 +212,7 @@ body {
   cursor: grab; /* 1. Default: Tangan Terbuka siap menggeser layar */
   transform-origin: 0 0; transform: scale(1);
   transition: background-color 0.3s ease;
-  touch-action: auto;
+  touch-action: none;
 }
 
 /* 2. Kursor saat layar sedang digeser (Pan) */
@@ -281,12 +281,13 @@ body.is-routing-wire #canvas {
 .circuit-component.selected { filter: drop-shadow(0 0 8px var(--primary)); }
 .circuit-component.selected > div { outline: 2px solid var(--primary); outline-offset: 4px; border-radius: 4px; }
 
-/* 🟢 SEMBUNYIKAN BOUNDING BOX & TOMBOL SAAT MERUTEKAN KABEL */
+/* 🟢 SEMBUNYIKAN BOUNDING BOX, TOMBOL, & NONAKTIFKAN HITBOX KABEL SAAT MERUTEKAN KABEL */
 body.is-routing-wire .circuit-component:hover { filter: none !important; }
 body.is-routing-wire .circuit-component.selected { filter: none !important; }
 body.is-routing-wire .circuit-component.selected > div { outline: none !important; }
 body.is-routing-wire .circuit-component .delete-btn,
 body.is-routing-wire .circuit-component .rotate-btn { display: none !important; }
+body.is-routing-wire .wire-hitbox { pointer-events: none !important; }
 
 .comp-label { font-family: monospace; font-size: 10px; fill: #333; }
 [data-theme="dark"] .comp-label { fill: #ccc; }
@@ -465,6 +466,10 @@ body.is-routing-wire .circuit-component .rotate-btn { display: none !important; 
   .nav-item svg { width: 24px; height: 24px; stroke-width: 2px; transition: transform 0.2s; }
   .nav-item.active { color: var(--primary); }
   .nav-item:active svg { transform: scale(0.85); }
+  /* KUNCI: Matikan pointer-events pin di HP jika mode rakit kabel belum aktif */
+  body:not(.wiring-mode-active) .connection-point {
+    pointer-events: none !important;
+  }
 }
 /* =========================================
    KHUSUS TOMBOL ROTASI (Memaksimalkan Ruang)
@@ -585,6 +590,8 @@ body.is-routing-wire .circuit-component .rotate-btn { display: none !important; 
   pointer-events: auto; 
   margin: 0;
   width: 340px; 
+  width: auto; 
+  min-width: 340px;
   max-width: 85vw; /* Responsif untuk layar HP */
   height: 100vh; 
   max-height: 100vh;
