@@ -618,3 +618,214 @@ window.toggleGrid = function() {
         canvas.classList.toggle('no-grid');
     }
 };
+
+// =========================================================
+// 8. BIND UI EVENTS FROM HTML (Refactored from inline onclick)
+// =========================================================
+document.addEventListener('DOMContentLoaded', () => {
+    const bindClick = (id, fn) => {
+        const el = document.getElementById(id);
+        if (el && typeof fn === 'function') el.addEventListener('click', fn);
+    };
+
+    // Toolbar Simulasi
+    bindClick('btnPlay', window.startSim);
+    bindClick('btnPause', window.pauseSim);
+    bindClick('btnStop', window.stopSim);
+    bindClick('btnTruthTable', window.showTruthTable);
+    bindClick('btnSerialMonitor', () => window.UIManager && window.UIManager.openSerialMonitor());
+    bindClick('btnCloseSerialMonitor', () => window.UIManager && window.UIManager.closeSerialMonitor());
+    bindClick('btnClearSerialMonitor', () => window.UIManager && window.UIManager.clearSerialMonitor());
+    bindClick('btnCloseValueModal', () => window.closeValueModal && window.closeValueModal());
+    bindClick('btnCancelValueModal', () => window.closeValueModal && window.closeValueModal());
+    bindClick('btnExitSave', () => { if(window.exportCircuit) window.exportCircuit(); if(window.closeExitModal) window.closeExitModal(); });
+    bindClick('btnExitConfirm', () => window.confirmExit && window.confirmExit());
+    bindClick('btnExitCancel', () => window.closeExitModal && window.closeExitModal());
+    bindClick('btnWireModeTop', window.toggleWireMode);
+    bindClick('btnWireModeBottom', window.toggleWireMode);
+
+    // File & History
+    bindClick('btnExport', window.exportCircuit);
+    bindClick('btnImport', window.importCircuit);
+    bindClick('btnUndo', window.undo);
+    bindClick('btnRedo', window.redo);
+
+    // Selection, Clipboard & Hapus
+    bindClick('btnSelectMode', window.toggleSelectMode);
+    bindClick('btnSelectAll', window.selectAllComponents);
+    bindClick('btnCopy', window.copySelection);
+    bindClick('btnPaste', window.pasteClipboard);
+    bindClick('btnDelete', window.deleteSelected);
+    bindClick('btnDeleteBottom', window.deleteSelected);
+
+    // Transformasi
+    bindClick('btnRotateLeft', () => window.rotateSelected && window.rotateSelected(-90));
+    bindClick('btnRotateRight', () => window.rotateSelected && window.rotateSelected(90));
+    bindClick('btnRotate180', () => window.rotateSelected && window.rotateSelected(180));
+    bindClick('btnMirrorX', () => window.mirrorSelected && window.mirrorSelected('X'));
+    bindClick('btnMirrorY', () => window.mirrorSelected && window.mirrorSelected('Y'));
+
+    // Aksi Massal
+    bindClick('btnClearWires', window.clearAllWires);
+    bindClick('btnClearCanvas', window.clearCanvas);
+
+    // Kontrol Viewport & Tema
+    bindClick('btnResetView', window.resetView);
+    bindClick('btnZoomOut', () => window.changeZoom && window.changeZoom(-0.1));
+    bindClick('btnZoomIn', () => window.changeZoom && window.changeZoom(0.1));
+    bindClick('btnToggleGrid', window.toggleGrid);
+    bindClick('btnToggleFullscreen', window.toggleFullscreen);
+    bindClick('btnToggleAnim', window.toggleAnimations);
+    bindClick('btnTheme', window.toggleTheme);
+
+    const zoomSlider = document.getElementById('zoomSlider');
+    if (zoomSlider) {
+        zoomSlider.addEventListener('input', (e) => {
+            if (window.setZoom) window.setZoom(e.target.value);
+        });
+    }
+});
+
+// =========================================================
+  // FITUR RESIZE PANEL KANAN (VALUE MODAL) DENGAN DRAG HANDLE
+  // =========================================================
+  document.addEventListener('DOMContentLoaded', () => {
+    const dragHandle = document.getElementById('modalDragHandle');
+    const modalContent = document.getElementById('valueModalContent');
+    
+    if (dragHandle && modalContent) {
+      let isDragging = false;
+      let startX = 0;
+      let startWidth = 0;
+
+      const onPointerDown = (e) => {
+        isDragging = true;
+        startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        startWidth = modalContent.getBoundingClientRect().width;
+        
+        // Matikan blok pemilihan teks saat ditarik
+        document.body.style.userSelect = 'none';
+        
+        // Ubah warna saat ditahan
+        dragHandle.style.background = 'rgba(255,255,255,0.1)';
+        dragHandle.style.cursor = 'ew-resize';
+      };
+
+      const onPointerMove = (e) => {
+        if (!isDragging) return;
+        const currentX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
+        
+        // Karena ditarik ke kiri (sumbu X mengecil) berarti lebarnya BERTAMBAH
+        const dx = startX - currentX; 
+        let newWidth = startWidth + dx;
+
+        // Batas minimal dan maksimal
+        if (newWidth < 340) newWidth = 340;
+        if (newWidth > window.innerWidth * 0.95) newWidth = window.innerWidth * 0.95;
+        
+        modalContent.style.width = `${newWidth}px`;
+      };
+
+      const onPointerUp = () => {
+        if (isDragging) {
+          isDragging = false;
+          document.body.style.userSelect = '';
+          dragHandle.style.background = 'rgba(255,255,255,0.02)';
+        }
+      };
+
+      dragHandle.addEventListener('mousedown', onPointerDown);
+      dragHandle.addEventListener('touchstart', onPointerDown, {passive: true});
+
+      document.addEventListener('mousemove', onPointerMove);
+      document.addEventListener('touchmove', (e) => {
+        if(isDragging) e.preventDefault(); // Cegah scroll saat menarik panel di HP
+        onPointerMove(e);
+      }, {passive: false});
+
+      document.addEventListener('mouseup', onPointerUp);
+      document.addEventListener('touchend', onPointerUp);
+    }
+  });
+
+// =========================================================================
+// FITUR "TEKAN LAMA" (LONG PRESS) UNTUK MELIHAT NAMA TOMBOL DI HP
+// =========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    // 1. Buat elemen kotak nama (tooltip) melayang khusus HP
+    const mobileTooltip = document.createElement('div');
+    mobileTooltip.style.cssText = `
+        position: fixed;
+        background: #1e293b;
+        color: #38bdf8;
+        padding: 6px 12px;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: bold;
+        z-index: 999999;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        white-space: nowrap;
+        top: -999px; /* Sembunyikan di luar layar saat awal */
+    `;
+    document.body.appendChild(mobileTooltip);
+
+    let pressTimer = null;
+
+    // 2. Cari semua tombol di menu atas dan menu bawah yang punya atribut "title"
+    const menuButtons = document.querySelectorAll('.toolbar button[title], .bottom-nav-bar button[title]');
+    
+    menuButtons.forEach(btn => {
+        // Matikan efek menu pop-up bawaan browser HP (seperti menu "Copy/Share")
+        btn.style.userSelect = 'none';
+        btn.style.webkitTouchCallout = 'none';
+
+        // Fungsi menyembunyikan nama
+        const hideTooltip = () => {
+            clearTimeout(pressTimer);
+            mobileTooltip.style.opacity = '0';
+            setTimeout(() => { mobileTooltip.style.top = '-999px'; }, 200); 
+        };
+
+        // Saat jari menempel pada layar
+        btn.addEventListener('touchstart', (e) => {
+            const titleText = btn.getAttribute('title');
+            if (!titleText) return;
+
+            // Jika jari ditahan selama setengah detik (500ms)
+            pressTimer = setTimeout(() => {
+                mobileTooltip.textContent = titleText;
+                
+                // Kalkulasi letak posisi (tengah-tengah tombol)
+                const rect = btn.getBoundingClientRect();
+                const isBottomBar = rect.top > (window.innerHeight / 2); // Cek letak tombol
+                
+                if (isBottomBar) {
+                    // Jika tombol bawah, munculkan di atas jari
+                    mobileTooltip.style.top = (rect.top - 40) + 'px'; 
+                } else {
+                    // Jika tombol atas, munculkan di bawah jari
+                    mobileTooltip.style.top = (rect.bottom + 10) + 'px'; 
+                }
+                
+                mobileTooltip.style.left = (rect.left + (rect.width / 2)) + 'px';
+                mobileTooltip.style.transform = 'translateX(-50%)';
+                
+                // Tampilkan!
+                mobileTooltip.style.opacity = '1';
+                
+                // (Bonus) Beri efek getar kecil di HP sebagai pertanda berhasil muncul
+                if (navigator.vibrate) navigator.vibrate(40);
+                
+            }, 500); // 500 = Waktu tahan (milidetik)
+        }, { passive: true });
+
+        // Saat jari dilepas, tergeser, atau batal sentuh
+        btn.addEventListener('touchend', hideTooltip);
+        btn.addEventListener('touchmove', hideTooltip);
+        btn.addEventListener('touchcancel', hideTooltip);
+    });
+});
