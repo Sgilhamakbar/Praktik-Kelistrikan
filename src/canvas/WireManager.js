@@ -544,10 +544,12 @@ export function deleteConnection(srcId, srcPin, tgtId, tgtPin) {
  * serta mengganti koneksi lama bila pin tidak mendukung multiple koneksi.
  */
 export function handleConnectionClick(compId, type, index) {
-    // Validasi mode Rakit Kabel khusus untuk layar sentuh / mobile
-    if (window.innerWidth <= 768 && !window.isWiringMode) {
-        UIManager.showToast('Aktifkan ikon Rakit Kabel di menu bawah terlebih dahulu!', 'warning');
-        return;
+    // KUNCI PENGAMAN: Tolak sentuhan jika Mode Kabel belum aktif
+    if (!CircuitStore.isWireMode) {
+        if (typeof UIManager !== 'undefined') {
+            UIManager.showToast('⚠️ Aktifkan "Mode rakit Kabel" untuk merakit!');
+        }
+        return; // Hentikan fungsi secara paksa
     }
     compId = Number(compId); index = Number(index);
 
