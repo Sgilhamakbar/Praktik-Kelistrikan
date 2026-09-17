@@ -462,13 +462,21 @@ export function createConnectionPoint(compId, pinType, index, total, compType) {
     pt.style.top = `${y}px`;
 
     // Event Listener Interaksi
+    let lastPinTap = 0;
     const handleInteract = (e) => { 
-        e.stopPropagation(); e.preventDefault(); 
+        e.stopPropagation(); 
+        if (e.cancelable) e.preventDefault(); 
+        
+        // ANTI DOUBLE-FIRE: Cegah HP membaca 1 sentuhan jari sebagai 2 klik
+        const now = Date.now();
+        if (now - lastPinTap < 300) return; // Abaikan jika ada klik susulan dalam waktu 0.3 detik
+        lastPinTap = now;
+
         handleConnectionClick(compId, pinType, index); 
     };
     
     pt.addEventListener('click', handleInteract); 
-    pt.addEventListener('mousedown', e => { e.stopPropagation(); e.preventDefault(); });
+    pt.addEventListener('mousedown', e => { e.stopPropagation(); if(e.cancelable) e.preventDefault(); });
     pt.addEventListener('touchstart', handleInteract, { passive: false });
 
     // --- TOOLTIP LOGIC ---
