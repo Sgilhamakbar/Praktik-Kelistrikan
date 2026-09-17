@@ -12,7 +12,7 @@ export const CircuitStore = {
           else document.body.classList.remove('is-routing-wire');
       }
   },
-  wireVisualMode: 2, // 2 = Penuh, 1 = Warna Saja, 0 = Polos
+  wireVisualMode: 0, // 2 = Penuh, 1 = Warna Saja, 0 = Polos
   componentIdCounter: 0,
   isSimulationActive: false,
   currentEditingComponent: null,
