@@ -544,6 +544,11 @@ export function deleteConnection(srcId, srcPin, tgtId, tgtPin) {
  * serta mengganti koneksi lama bila pin tidak mendukung multiple koneksi.
  */
 export function handleConnectionClick(compId, type, index) {
+    // Validasi mode Rakit Kabel khusus untuk layar sentuh / mobile
+    if (window.innerWidth <= 768 && !window.isWiringMode) {
+        UIManager.showToast('Aktifkan ikon Rakit Kabel di menu bawah terlebih dahulu!', 'warning');
+        return;
+    }
     compId = Number(compId); index = Number(index);
 
     if (!CircuitStore.connectionStart) {
@@ -777,33 +782,49 @@ export function drawConnections() {
 
             // 2. Cari arah hadap pin Sumber
             let spDirX = 0, spDirY = 0;
-            const dLeftS = Math.abs(sp.x - sLeft);
-            const dRightS = Math.abs(sRight - sp.x);
-            const dTopS = Math.abs(sp.y - sTop);
-            const dBotS = Math.abs(sBottom - sp.y);
-            
-            const minS = Math.min(dLeftS, dRightS, dTopS, dBotS);
-            if (minS === dLeftS) spDirX = -1;
-            else if (minS === dRightS) spDirX = 1;
-            else if (minS === dTopS) spDirY = -1;
-            else if (minS === dBotS) spDirY = 1;
+            if (compS.type === 'wire_node') {
+                if (Math.abs(tp.x - sp.x) > Math.abs(tp.y - sp.y)) {
+                    spDirX = tp.x > sp.x ? 1 : -1;
+                } else {
+                    spDirY = tp.y > sp.y ? 1 : -1;
+                }
+            } else {
+                const dLeftS = Math.abs(sp.x - sLeft);
+                const dRightS = Math.abs(sRight - sp.x);
+                const dTopS = Math.abs(sp.y - sTop);
+                const dBotS = Math.abs(sBottom - sp.y);
+                
+                const minS = Math.min(dLeftS, dRightS, dTopS, dBotS);
+                if (minS === dLeftS) spDirX = -1;
+                else if (minS === dRightS) spDirX = 1;
+                else if (minS === dTopS) spDirY = -1;
+                else if (minS === dBotS) spDirY = 1;
+            }
 
             // 3. Cari arah hadap pin Tujuan
             let tpDirX = 0, tpDirY = 0;
-            const dLeftT = Math.abs(tp.x - tLeft);
-            const dRightT = Math.abs(tRight - tp.x);
-            const dTopT = Math.abs(tp.y - tTop);
-            const dBotT = Math.abs(tBottom - tp.y);
-            
-            const minT = Math.min(dLeftT, dRightT, dTopT, dBotT);
-            if (minT === dLeftT) tpDirX = -1;
-            else if (minT === dRightT) tpDirX = 1;
-            else if (minT === dTopT) tpDirY = -1;
-            else if (minT === dBotT) tpDirY = 1;
+            if (compT.type === 'wire_node') {
+                if (Math.abs(sp.x - tp.x) > Math.abs(sp.y - tp.y)) {
+                    tpDirX = sp.x > tp.x ? 1 : -1;
+                } else {
+                    tpDirY = sp.y > tp.y ? 1 : -1;
+                }
+            } else {
+                const dLeftT = Math.abs(tp.x - tLeft);
+                const dRightT = Math.abs(tRight - tp.x);
+                const dTopT = Math.abs(tp.y - tTop);
+                const dBotT = Math.abs(tBottom - tp.y);
+                
+                const minT = Math.min(dLeftT, dRightT, dTopT, dBotT);
+                if (minT === dLeftT) tpDirX = -1;
+                else if (minT === dRightT) tpDirX = 1;
+                else if (minT === dTopT) tpDirY = -1;
+                else if (minT === dBotT) tpDirY = 1;
+            }
 
             // 4. Jarak kabel keluar lurus
-            const offsetS = 15; 
-            const offsetT = 15; 
+            const offsetS = compS.type === 'wire_node' ? 0 : 15; 
+            const offsetT = compT.type === 'wire_node' ? 0 : 15; 
             
             let p1x = sp.x + (spDirX * offsetS);
             let p1y = sp.y + (spDirY * offsetS);
@@ -892,11 +913,11 @@ export function drawConnections() {
             flowPath.classList.add('wire-flow');
             flowPath.style.pointerEvents = 'none'; // Matikan interaksi
 
-            // 3. GARIS HITBOX GAIB (Area Sentuh Super Lebar: 30px)
+            // 3. GARIS HITBOX GAIB (Area Sentuh 10px)
             hitboxPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             hitboxPath.classList.add('wire-hitbox');
             // cssText menimpa aturan CSS agar 100% gaib tapi tetap bisa diklik
-            hitboxPath.style.cssText = 'fill: none !important; stroke: transparent !important; stroke-width: 30px !important; pointer-events: stroke !important; cursor: pointer !important;';
+            hitboxPath.style.cssText = 'fill: none !important; stroke: transparent !important; stroke-width: 10px !important; pointer-events: stroke !important; cursor: pointer !important;';
 
             group.appendChild(basePath);
             group.appendChild(flowPath);
@@ -1124,9 +1145,10 @@ export function updateWireStates() {
 
         const basePath = group.querySelector('.wire-base');
         const flowPath = group.querySelector('.wire-flow');
-        if (!basePath || !flowPath) return;
+        const hitboxPath = group.querySelector('.wire-hitbox');
+        if (!basePath || !flowPath || !hitboxPath) return;
 
-        const sType = basePath.dataset.sType;
+        const sType = hitboxPath.dataset.sType;
         let isGround = false;
         let voltage = 0;
 
@@ -1138,7 +1160,7 @@ export function updateWireStates() {
             }
         } else {
             const sp = getPinPosition(conn.source.compId, sType, conn.source.pinIndex);
-            const tp = getPinPosition(conn.target.compId, basePath.dataset.tType, conn.target.pinIndex);
+            const tp = getPinPosition(conn.target.compId, hitboxPath.dataset.tType, conn.target.pinIndex);
             if ((sp && sp.isNeg) || (tp && tp.isNeg)) isGround = true;
         }
 
