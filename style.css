@@ -117,6 +117,30 @@ body {
 .toolbar::-webkit-scrollbar { display: none; }
 .toolbar > div { flex-shrink: 0; }
 
+#closeMenuBtn { display: none; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; }
+        #collapseSidebarBtn { 
+          background: transparent;  
+          border: none;             
+          box-shadow: none;         
+          color: var(--text-muted); 
+          cursor: pointer; 
+          width: 32px; 
+          height: 32px; 
+          border-radius: 6px;       
+          display: flex; 
+          align-items: center; 
+          justify-content: center;
+          margin-left: auto;        
+          transition: background 0.2s, color 0.2s, transform 0.1s;
+        }
+        #collapseSidebarBtn svg { width: 22px; height: 22px; transition: transform 0.3s ease; }
+        #collapseSidebarBtn:hover { background: var(--control-bg); color: var(--text-main); }
+        #collapseSidebarBtn:active { transform: scale(0.92); }
+        @media (max-width: 768px) { 
+            #closeMenuBtn { display: flex; align-items: center; } 
+            #collapseSidebarBtn { display: none; } 
+        }
+        
 /* ==========================================================================
    3. KOMPONEN UI & TOMBOL (Button, Modals, Toasts)
    ========================================================================== */
@@ -353,6 +377,65 @@ body.is-routing-wire .wire-hitbox { pointer-events: none !important; }
   transition: gap 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), padding 0.6s cubic-bezier(0.25, 0.8, 0.25, 1), transform 0.2s, box-shadow 0.2s, border-color 0.2s;
 }
 
+/* Sidebar Search */
+.sidebar-search {
+  padding: 12px 15px;
+  position: relative;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-container);
+}
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: var(--control-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 4px 10px;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+.search-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--text-main);
+  font-size: 12px;
+  outline: none;
+  padding: 4px 0;
+}
+.btn-icon {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 2px 4px;
+  flex-shrink: 0;
+  position: relative;
+  transition: color 0.2s;
+}
+.btn-icon:hover { color: var(--text-main); }
+#filterToggleBtn:hover { color: var(--primary); }
+.search-divider {
+  width: 1px; height: 14px; background: var(--border-color); margin: 0 6px; flex-shrink: 0;
+}
+.filter-dot {
+  position: absolute; top: 0; right: 0; width: 6px; height: 6px; background: var(--primary); border-radius: 50%;
+}
+/* Filter Dropdown */
+.filter-dropdown {
+  position: absolute; top: calc(100% - 5px); right: 15px; background: var(--control-bg);
+  border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 0;
+  width: 180px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5); z-index: 100;
+}
+.filter-header {
+  font-size: 10px; color: var(--text-muted); padding: 0 12px 6px 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.filter-options { display: flex; flex-direction: column; }
+.filter-label {
+  font-size: 12px; color: var(--text-main); padding: 6px 12px; cursor: pointer; display: flex; align-items: center; transition: background 0.2s;
+}
+.filter-label:hover { background: var(--border-color); }
+.filter-radio { margin-right: 8px; accent-color: var(--primary); }
+
   /* ==========================================================================
    7. MEDIA QUERIES (DESKTOP & MOBILE RESPONSIVE)
    ========================================================================== */
@@ -422,6 +505,34 @@ body.is-routing-wire .wire-hitbox { pointer-events: none !important; }
   .app-container { flex-direction: column; height: 100dvh; overflow: hidden; }
   .canvas-container { flex: 1; height: 100%; min-height: 0; padding-top: calc(env(safe-area-inset-top, 0px) + 8px); }
 
+
+  /* Perbaikan Pop Up "Hapus Kabel" di HP */
+  .confirm-toast {
+    width: 85%;
+    max-width: 200px; /* Pop up*/
+    flex-direction: row;
+    flex-wrap: wrap; 
+    justify-content: center;
+    text-align: center;
+    padding: 10px 12px; /* Padding pop-up*/
+    gap: 15spx; /* Jarak antar tombol */
+  }
+  .confirm-toast span {
+    width: 100%; 
+    font-size: 12px;
+    line-height: 1.4;
+    white-space: normal;
+    word-wrap: break-word;
+    margin-bottom: 4px;
+  }
+  .confirm-toast button {
+    flex: 1; 
+    width: auto;
+    font-size: 10px;
+    padding: 5px 5px;
+    border-radius: 10px;
+  }
+
   /* Sulap Sidebar menjadi Bottom Sheet */
   .sidebar { 
     position: fixed; bottom: -100%; left: 0; width: 100%; height: 75vh; max-height: none;
@@ -460,6 +571,7 @@ body.is-routing-wire .wire-hitbox { pointer-events: none !important; }
   .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
 
   /* Bottom Navigation Bar (Gaya Instagram) */
+  .hide-on-mobile { display: none !important; }
   .bottom-nav-bar {
     display: flex; position: fixed; bottom: 0; left: 0; width: 100%; background: var(--bg-container); border-top: 1px solid var(--border-color); z-index: 900; justify-content: space-around; 
     padding: 10px 0 calc(env(safe-area-inset-bottom, 0px) + 10px) 0; box-shadow: 0 -4px 20px rgba(0,0,0,0.06);
@@ -697,3 +809,135 @@ body.is-routing-wire .wire-hitbox { pointer-events: none !important; }
     margin-top: 24px !important;
   }
 }
+/* Modal Inputs & Labels */
+.modal-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.modal-input {
+  width: 100%;
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-main);
+  color: var(--text-main);
+  box-sizing: border-box;
+}
+.modal-input-unit {
+  font-weight: bold;
+  font-size: 14px;
+  color: var(--primary);
+}
+
+/* Desain Kotak Palet Melayang */
+        .wire-palette-container {
+            position: absolute;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+            z-index: 9999;
+            flex-direction: column;
+            gap: 10px;
+            /* Animasi Muncul (Pop In) */
+            animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        /* Teks Header Palet */
+        .wire-palette-header {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 2px;
+            pointer-events: none;
+        }
+
+        /* Grid Warna */
+        .wire-palette-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        /* Gaya Tombol Warna Bulat */
+        .color-btn {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0;
+            outline: none;
+        }
+
+        /* Efek saat Warna di-Hover (Membesar & Ada Cincin Putih) */
+        .color-btn:hover {
+            transform: scale(1.15) translateY(-2px);
+            border-color: #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+        }
+
+        /* Tombol Reset yang Elegan di Bawah */
+        .color-btn-reset {
+            grid-column: span 4;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            border-radius: 6px;
+            padding: 6px 0;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+            margin-top: 4px;
+        }
+
+        .color-btn-reset:hover {
+            background: rgba(239, 68, 68, 0.15); /* Merah transparan */
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        /* Keyframe Animasi */
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .color-btn { width: 24px; height: 24px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: transform 0.2s; padding: 0; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .color-btn:hover { transform: scale(1.2); border-color: white; }
+/* Serial Monitor */
+.sm-title { margin: 0; font-size: 14px; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
+.sm-close-btn { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 2px; transition: color 0.2s; }
+.sm-close-btn:hover { color: var(--danger); }
+.sm-body { flex: 1; display: flex; flex-direction: column; min-height: 0; position: relative; }
+.sm-output { flex: 1; overflow-y: auto; background: #000000; color: #10b981; font-family: monospace; font-size: 12px; padding: 10px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; margin-bottom: 5px; }
+.sm-placeholder { color: #64748b; }
+.sm-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; flex-shrink: 0; padding-right: 25px; }
+.sm-footer-text { font-size: 11px; color: #64748b; }
+.sm-clear-btn { padding: 4px 10px; font-size: 12px; background: #334155; color: white; border-color: transparent; }
+.sm-clear-btn:hover { background: #475569; }
+.sm-resize-handle { position: absolute; bottom: -2px; right: -2px; width: 35px; height: 35px; cursor: nwse-resize; display: flex; justify-content: flex-end; align-items: flex-end; padding: 6px; z-index: 20; background: transparent; }
+
+/* Modals Refactor (Value & Exit) */
+.vm-content { position: relative; padding-left: 36px; }
+.vm-drag-handle { position: absolute; left: 0; top: 0; bottom: 0; width: 24px; cursor: ew-resize; background: rgba(255,255,255,0.02); display: flex; align-items: center; justify-content: center; z-index: 10; border-right: 1px solid var(--border-color); touch-action: none; }
+.modal-close-btn { position: absolute; top: 15px; right: 15px; background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; padding: 4px; border-radius: 4px; transition: all 0.2s; }
+.modal-close-btn:hover { color: var(--danger); background: var(--control-bg); }
+
+.exit-modal-content { max-width: 350px; text-align: center; }
+.exit-modal-title { justify-content: center; color: var(--danger); display: flex; align-items: center; }
+.exit-modal-msg { margin: 15px 0; font-size: 14px; color: var(--text-main); }
+.exit-modal-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+.btn-block { width: 100%; justify-content: center; }
+.btn-cancel { background: var(--control-bg) !important; color: var(--text-main) !important; border-color: transparent !important; }
+.btn-cancel:hover { background: var(--border-color) !important; }
