@@ -1,6 +1,6 @@
 // File: src/canvas/CanvasInteractions.js
 
-// 1. IMPOR KETERGANTUNGAN
+// 1. IMPOR 
 import { CircuitStore } from '../state/CircuitStore.js';
 import { SimulationEngine } from '../engine/SimulationEngine.js';
 import { HistoryManager } from '../HistoryManager.js';
@@ -768,15 +768,22 @@ export function handleDrop(e) {
 export function handleCanvasMouseDown(e) {
   if (e.target.id !== 'canvas' && e.target.id !== 'wire-overlay' && e.target.id !== 'wire-svg') return;
   if (e.button !== 0) return; // Hanya baca klik kiri
-
+  if (e.type === 'touchstart' && !CircuitStore.connectionStart) return;
   if (!e.shiftKey && !CircuitStore.isSelectMode) clearSelection();
 
   // JIKA SEDANG PASANG KABEL, KLIK KANVAS = BUAT TITIK BELOK (WAYPOINT)
   if (CircuitStore.connectionStart) {
+    if (e.cancelable) e.preventDefault(); // Cegah layar HP ikut terseret saat membuat belokan
+
     const canvas = document.getElementById('canvas');
     const cr = canvas.getBoundingClientRect();
-    let mx = (e.clientX - cr.left) / UIManager.currentZoom;
-    let my = (e.clientY - cr.top) / UIManager.currentZoom;
+    
+    // 🌟 BACA KOORDINAT SENTUHAN JARI (HP) ATAU KLIK (PC)
+    let clientX = e.touches && e.touches.length > 0 ? e.touches[0].clientX : e.clientX;
+    let clientY = e.touches && e.touches.length > 0 ? e.touches[0].clientY : e.clientY;
+    
+    let mx = (clientX - cr.left) / UIManager.currentZoom;
+    let my = (clientY - cr.top) / UIManager.currentZoom;
     
     // Grid Snapping (Magnet 10px)
     mx = Math.round(mx / 10) * 10;
@@ -809,11 +816,16 @@ export function handleCanvasMouseDown(e) {
     return; // Hentikan fungsi
   }
 
+  // --- Blok untuk Marquee (Blok Biru) ---
   CircuitStore.isMarqueeSelecting = true;
   const canvas = document.getElementById('canvas');
   const cr = canvas.getBoundingClientRect();
-  CircuitStore.marqueeStart.x = (e.clientX - cr.left) / UIManager.currentZoom;
-  CircuitStore.marqueeStart.y = (e.clientY - cr.top) / UIManager.currentZoom;
+  
+  let clientX = e.clientX;
+  let clientY = e.clientY;
+  
+  CircuitStore.marqueeStart.x = (clientX - cr.left) / UIManager.currentZoom;
+  CircuitStore.marqueeStart.y = (clientY - cr.top) / UIManager.currentZoom;
 
   const selBox = document.getElementById('selection-box');
   selBox.style.left = CircuitStore.marqueeStart.x + 'px';
@@ -829,6 +841,7 @@ export function initCanvasEvents() {
 
     // Telinga pendengar agar kanvas bisa diklik (untuk marquee/kabel) dan dijatuhi komponen
     canvas.addEventListener('mousedown', handleCanvasMouseDown);
+    canvas.addEventListener('touchstart', handleCanvasMouseDown, { passive: false }); // 🌟 TAMBAHAN UNTUK HP
     canvas.addEventListener('dragover', handleDragOver);
     canvas.addEventListener('drop', handleDrop);
 }
